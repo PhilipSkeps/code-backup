@@ -1,0 +1,69 @@
+---
+title: 'Midterm Exam R Shell'
+output: html_notebook
+---
+
+
+### introduction:
+
+You can use this document as a place to read in your data and write your code for the midterm exam.  You will need to write all your own code, but you can reference the labs that you already completed.
+ 
+
+
+```{r, echo = F, message = F}
+##  Run this piece of code to load the packages and your data
+
+# Clear Workspace
+rm(list = ls()) 
+
+# load packages we typically use for this class.
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+```
+
+
+# Student Data
+
+```{r}
+# run this code chunk to load the student data
+mydata <- read.csv(file.choose())
+names(mydata)[1] <- "Year"
+```
+
+```{r}
+# use this space to work
+head(mydata)
+glimpse(mydata)
+mean(~Height, data = mydata)
+favstats(~Pulse, data = mydata)
+sd(~Exercise, data = mydata)
+favstats(TV ~ Smoke, data = mydata)
+gf_boxplot(Exercise ~ Smoke, data = mydata) + coord_flip()
+gf_histogram(~Weight, data = mydata)
+gf_boxplot(~ Weight, data = mydata)
+favstats(~Weight, data = mydata)
+
+```
+
+
+
+# Rolls Data
+```{r}
+rolls <- read.csv(file.choose())
+names(rolls)[1] <- "Success"
+```
+
+
+```{r}
+# use this space to work
+gf_qq( ~Success, data = rolls) %>% gf_qqline()
+gf_qq(~Bdat1) %>% gf_qqline()
+gf_histogram(~Success, data = rolls)
+mean(~Success, data = rolls)
+sd(~Success, data = rolls)
+pnorm(14, mean = 21, sd = 3.695 ) - pnorm(0, mean = 21, sd = 3.695)
+pbinom(14,60,.35)
+
+
+```
+

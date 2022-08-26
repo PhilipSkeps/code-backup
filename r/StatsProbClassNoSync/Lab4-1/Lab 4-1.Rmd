@@ -1,0 +1,254 @@
+---
+title: 'Lab 4-1: Large Sample Confidence Intervals for the Population Mean'
+output:   html_notebook
+---
+
+### Objectives:
+
+For this lab you should...
+
+  - Learn the R code that produces confidence intervals for various values of the mean.
+  - Read datasets into R and draw inference based on confidence intervals.
+  - Check to see if confidence intervals constructed from known distributions cover the true mean.
+  
+You will need a new package, dyplr, to run the R code given. You will install it now, and it will be included in the library list for all future labs.
+
+```{r, echo = F}
+remove.packages("rlang")
+install.packages("rlang")
+install.packages("dplyr")
+
+```
+
+```{r preamble, echo = F, message = F}
+# Clear Workspace
+rm(list = ls())
+knitr::opts_chunk$set(echo=FALSE)
+
+
+
+# load packages we typically use for this class.
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+library(rlang)
+library(dplyr)
+```
+
+
+You will need the following datasets: bloodpressure.csv, mpg.csv, and arsenic.csv. 
+
+**TASK 0** Load the datasets into your workspace.
+```{r, echo = F}
+
+mpg <- read.csv(file.choose())
+names(mpg)[1] <- "MPGAL"
+
+as <- read.csv(file.choose())
+names(as)[1] <- "As"
+
+#Load the bloodpressure.csv dataset here
+BloodPressure <- read.csv(file.choose())
+```
+
+# Part 1: Systolic blood pressure
+
+Recall bloodpressure.csv contains three sets of measurements for systolic blood pressure: A, B and C.  
+
+R is very adept at creating confidence intervals.  
+
+**TASK 1.1** Use the code below to find a 95% confidence interval for population mean of systolic blood pressure using the first set of measurements (A).
+
+```{r, echo = F}
+BloodPressureA <- BloodPressure %>%
+   filter(Trial == "A")
+t.test(~SystolBP, data = BloodPressureA)$conf.int
+```
+
+**TASK 1.2** Modify the code below to find a 90% confidence interval for population mean of systolic blood pressure using the first set of measurements.
+
+```{r, echo = F}
+t.test(~SystolBP, conf.level = .9, data = BloodPressureA)$conf.int
+```
+
+**TASK 1.3** Find the 90% and 95% confidence intervals for the second (B) and third (C) measurements of systolic blood pressure. You will need to filter the data to create two new datasets that only include B and C.  
+
+** Response ** B(.95) => (120.5,134.1) B(.9) => (119.8062 132.9703) C(.95) => (120.8833 131.8932) C(.9) => (120.8833 131.8932)
+
+```{r, echo = F}
+BloodPressureB <- BloodPressure %>%
+   filter(Trial == "B")
+BloodPressureC <- BloodPressure %>%
+   filter(Trial == "C")
+t.test(~SystolBP, conf.level = .95, data = BloodPressureB)$conf.int
+t.test(~SystolBP, conf.level = .90, data = BloodPressureB)$conf.int
+t.test(~SystolBP, conf.level = .95, data = BloodPressureC)$conf.int
+t.test(~SystolBP, conf.level = .90, data = BloodPressureC)$conf.int
+```
+
+**TASK 1.4** Construct side-by-side boxplots of systolic blood pressure, sorted by trials A, B and C.
+
+```{r, echo = F}
+gf_boxplot(SystolBP ~ Trial, data = BloodPressure)
+```
+
+**TASK 1.5** Is it reasonable that the measurements for A, B and C all came from the same set of 85 people, based on your confidence intervals? Explain.
+
+    **Response**  The Confidence intervals, centers, and spread are all approximately reasonable therefore it is reasonable to assume the data for all trials came
+    from the same 85 people
+    
+**TASK 1.6** Use the code below to create a 95\% one-sided confidence lower bound for the population mean of systolic blood pressure using the first set of measurements.
+
+```{r, echo = F}
+t.test(~SystolBP, data = BloodPressureA, conf.level = .95, alternative = c("greater"))$conf.int
+```
+
+
+**TASK 1.7** Healthy systolic blood pressure should not exceed 120. Report your lower bound for the mean systolic blood pressure from the first measurement and explain whether you can conclude that this population is averaging in the healthy range.
+
+    **Response** You are unable to conclude that the population is averaging in the healthy range because the lower bound of systolic blood pressure is greater than the healthy amount
+    (122.86)
+    
+# Part 2: Drawing Inference with Confidence Intervals.
+
+
+#### Fuel Economy 
+
+The dataset mpg.csv measured the miles per gallon consumption on the highway of 55 passenger cars. 
+
+**TASK 2.1** With 95% confidence, determine whether it is plausible that the mean miles per gallon for passenger cars on the highway is 30 miles per gallon. Explain your answer.
+
+    **Response** We are 95% confident that 30 miles per gallon is not the mean miles per gallon passenger cars on the highway  Because it is not contained within the confidence interval.
+
+```{r, echo = F}
+t.test(~MPGAL, conf.level = .95, data = mpg)$conf.int
+```
+
+**TASK 2.2** Using a 90\% confidence lower bound, can you assert that the average miles per gallon is not lower than 22?  Explain your answer.
+
+    **Response** We are 90% confident that the mean is not lower than 25.57 therefore we can assert that the average miles per gallon is not lower than 22
+
+```{r, echo = F}
+t.test(~MPGAL, data = mpg, conf.level = .90, alternative = c("greater"))$conf.int
+```
+
+
+### Arsenic in ground water
+
+The dataset arsenic.txt measure (in parts per billion) the amount of arsenic present in ground water in Northwest Texas wells.  According to the EPA, the acceptable threshold of arsenic in water is 10 parts per billion.
+
+**TASK 2.3** Using a 90% confidence interval for the mean level of arsenic, would you conclude that the wells are not dangerous, on average? Explain your answer.
+
+    **Response** You cannot conclude that the wells are not dangerous on average because the upper bound is greater than the safe threshold therefore we are not 90% confident that
+    the mean wells are not dangerous
+    
+```{r, echo = F}
+t.test(~As, conf.level = .90, data = as)$conf.int
+```
+
+**TASK 2.4** Is it possible that the 95% confidence interval will indicate the mean arsenic level *is* acceptable?
+Explain why or why not, WITHOUT computing the 95% interval.
+
+    **Response** It is not possible beacause our bounds around the mean will be larger and if it was already too large for 90% confidence interval larger bounds will not help
+    
+
+**TASK 2.5** Report the 98% confidence upper bound for the mean level of arsenic.
+
+    **Response**  The upper bound is 28.93
+```{r, echo = F}
+t.test(~MPGAL, data = mpg, conf.level = .98, alternative = c("less"))$conf.int
+```
+
+**TASK 2.6** Explain why an upper bound is more informative than a lower bound in this scenario.
+
+    **Response** We do not care how safe the mean is as long as its safe.  Therefore we want to compute the upper bound to attempt to determine if the population mean 
+    lies below the threshold
+    
+    
+# Part 3: Testing Known Distributions with Confidence Intervals
+
+We have worked with the Binomial distribution quite a bit. R has many built-in functions or Binomial distributions:
+
+  - dbinom(x, size = n, prob = p) calculates P(X=x) for X ~ binomial(n,p)
+  - pbinom(x,size = n, prob = p) calculates $P(X ≤ x)$ for X ~ binomial(n,p)
+  - qbinom(pth,size = n, prob = p) calculates the pth percentile for X ~  binomial(n,p)
+  - rbinom(n = SampleSize,size = n, prob = p) simulates SampleSize observations from a binomial(n,p)
+  
+**TASK 3.0** Simulate 1000 random data points from a Binomial random variable that has 100 trials and probability of success 0.30. 
+
+```{r, echo = F}
+Binom1 = rbinom(n = 1000, size = 100, prob = .3)
+```
+
+**TASK 3.1** Using the data generated in 3.0, report the 90%, 95% and 99% confidence intervals for the mean of the Binomial dataset.
+
+    **Response** 90% => (29.7,30.2) 95% => (29.7,30.3) 99% => (29.6,30.3)
+    
+```{r, echo = F}
+t.test(Binom1, conf.level = .90)$conf.int
+t.test(Binom1, conf.level = .95)$conf.int
+t.test(Binom1, conf.level = .99)$conf.int
+
+```
+
+**TASK 3.2** What is the population mean, $\mu$ for X ~ Binom(100,0.30)?
+
+    **Response** $\mu$ = 30
+
+
+
+**TASK 3.3** Do all of your confidence intervals cover the TRUE mean of this distribution?  How can you tell?
+
+    **Response** All confidence intervals cover the true mean of this distribution because all confidence intervals span from 29.* to 30.* containg the true population mean of 30
+
+**TASK 3.4** TRUE or FALSE: When running this simulation (ie. creating random binomial data and constructing a confidence interval), the interval you construct with ALWAYS cover the true
+value of $\mu$.
+
+    **Response** False, some simulations are not going to cover the true population mean 
+    
+    
+    
+# Part 4: Your class data
+
+MATH 201 students have been submitting data about the number of hours each person slept last night. Please use this link to take the survey:
+ <https://forms.gle/5E8kqUosoe8h6Hgj6> 
+ 
+ Follow the steps below to download the data:
+
+  1. Go to the Google Sheet where this data can be downloaded:  <https://docs.google.com/spreadsheets/d/1gM7Ub-d1cxQQd06WV2G8PCp0YhXk_9Z9pS20Xsvu1dk/edit?resourcekey#gid=711381001>
+  2. Select File -> Download -> Comma Separated Values
+  3. The file should automatically download to your downloads folder.
+  
+
+**TASK 4.0** Use the code below to load the data from the Google Sheet into your workspace.
+
+```{r, echo = F}
+SleepPath <- file.choose()
+Sleep <- read.csv(SleepPath)
+names(Sleep)[2] <- "Hours"
+```
+
+**TASK 4.1** Use R to make a boxplot of your data. 
+
+    **Response** Boxplot made
+    
+```{r, echo = F}
+gf_boxplot(~Hours, data = Sleep)
+```
+
+**TASK 4.2** Use R to calculate the sample mean and sample standard deviation.
+
+    **Response** mean = 7.15 sd = 1.43
+    
+```{r, echo = F}
+mean(~Hours, data = Sleep)
+sd(~Hours, data = Sleep)
+```
+
+**TASK 4.3** By hand, construct a 95% confidence interval for the true mean sleep time of MATH 201 students.
+
+    **Response** (6.864974,7.439906)
+    
+
+**TASK 4.4** Write a conclusion that can be drawn from from the 95\% confidence interval generated.
+
+    **Response** We are 95% confident the true population mean of hours slept by students last night lies within 6.86 hours and 7.44 hours

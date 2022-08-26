@@ -1,0 +1,313 @@
+---
+title: 'Lab 3-1: The Normal Distribution, Probability Plots, and Central Limit Theorem'
+output:   html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+rm(list = ls()) #clear the workspace
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+```
+
+### Objectives:
+
+For this lab you should...
+
+  - Compute graphical representations of and probabilities with the Normal Distribution.
+  - Create and interpret probability plots
+  - Determine how well the distribution of sample means approximate the Normal Distribution for various sample sizes.
+  
+# Part 1: Using the Normal Distribution.
+
+As you learned in last week's lab, R has the ability to calculate probabilities exactly from distributions.  For the Normal Distribution:
+
+  - pnorm(x, mean = mu, sd = sd) calculates $P(X ≤ x)$ for X ~ $N(mu, sd^2)$
+  - qnorm(p, mean = mu, sd = sd) calculates the pth percentile for  X ~ $N(mu, sd^2)$
+  - rnorm(N, mean = mu, sd = sd) simulates N observations from X ~ $N(mu, sd^2)$
+  
+For the tasks below, let X ~ N(5, variance = 16)
+
+**TASK 1.1** Use R to calculate P(X<3). Modify the code below and run it.
+
+    **Response:** P(X<3) = .309
+    
+```{r, echo = F}
+pnorm(3, mean = 5, sd = 4)
+(3-5)/4
+```
+
+**TASK 1.2** If you were to perform this computation by hand using a Z-table, what z-score would you use?
+
+    **Response:**  Z = -0.5
+
+
+
+**TASK 1.3**  Explain in your own words what the function *qnorm* is computing.
+
+    **Response:** qnorm calculates the relative value of x that yields the probability passed on the argument on the left side of x occuring.  Calculates y in P(x < y).
+
+
+
+**TASK 1.4** What is the third quartile for X?
+
+    **Response:** third quartile = 7.698
+```{r, echo = F}
+qnorm(.75, mean = 5, sd = 4)
+```
+
+
+
+**TASK 1.5** How many standard deviations away from the mean is the 3rd quartile for this distribution?
+
+
+    **Response:** it is 0.674 sigma away from the mean 
+```{r, echo = F}
+(qnorm(.75, mean = 5, sd = 4) - 5) / 4
+```
+
+# Part 2: Creating Probability Plots
+
+You will generate sets of data from four different distributions and use them to create probability plots to either confirm or reject that the data are normal.  The four distributions are:
+
+   - N(mu = 0, variance = 1)
+   - Uniform(min = 0, max = 1)
+   - Binomial(n = 50, p = 0.5)
+   - Binomial(n = 50, p = 0.02)
+   
+
+**TASK 2.1** Modify and run the code below to generate datasets with 500 observations each:
+
+```{r, echo = F}
+# generate n observations from a normal(0,1) distribution:
+Ndat  <- rnorm(n = 500, mean = 0, sd = 1) 
+
+# generate n observations from a uniform(0,1) distribution:
+Udat  <- runif(n = 500, min = 0, max = 1)
+
+# generate n observations from a Binomial(50,.5) distribution
+Bdat1 <- rbinom(n = 500, size = 50, prob = 0.5)
+
+# generate n observations from a Binomial(50,.0.02) distribution
+Bdat2 <- rbinom(n = 500, size = 50, prob = 0.02)
+```
+
+**TASK 2.2** Use the code below to create a histogram and probability plot for the Ndat (Normal(0,1)) data.
+```{r, echo = F}
+gf_histogram(~Ndat)
+gf_qq(~Ndat) %>% gf_qqline()
+```
+
+
+
+**TASK 2.3** Modify the code below to create a histogram and probability plot for the Udat (Uniform(0,1)) data.
+```{r, echo = F}
+gf_histogram(~Udat)
+gf_qq(~Udat) %>% gf_qqline()
+```
+
+
+
+
+**TASK 2.4** Create a histogram and probability plot for the Bdat1 (Binomial(50,.5)) data.
+```{r, echo = F}
+gf_histogram(~Bdat1)
+gf_qq(~Bdat1) %>% gf_qqline()
+```
+
+
+
+
+**TASK 2.5** Create a histogram and probability plot for the Bdat2 (Binomial(50, 0.02)) data.
+```{r, echo = F}
+gf_histogram(~Bdat2)
+gf_qq(~Bdat2) %>% gf_qqline()
+```
+
+
+
+**TASK 2.6** Which of the four data sets generated appeared to be approximately normal?
+
+    **Response:**  The normal distribution (Udat) and the binomial distribution (Bdat1) with the probability of 0.5 appeared approximately normal because there percentiles plotted against 
+    the normal percentiles appeared to be roughly linear with a slope of approximately 1.
+
+
+
+**TASK 2.7**  In part 2.2, you generated a probability plot and histogram using 500 values taken from a normal distribution.  If you had generated and plotted a dataset of only 100 observations from the same normal distribution, will the probability plot and histogram still look approximately normal?  Explain your answer
+
+    **Response:** With 100 values the graphs that appear normal at 500 samples would still appear normal.  However the graphs would not appear as linear with the 100 sample data than the
+    500 sample data.
+
+
+
+
+
+# Part 3: Testing the Central Limit Theorem
+
+In this part you will create probability plots and histograms from samples taken from non-normal distributions using a variety of sample sizes.  The objective is to investigate how quickly the means of different distributions approximate the normal distribution as the sample sizes increase.  
+
+### CLT and the Uniform Distribution
+
+The goal here is to generate 10,000 samples, each of the same size, and record the sample mean each of them.  We can then explore the behavior and distribution of the sample mean by observing histograms and probability plots.  
+
+**TASK 3.1** Use the code below to generate 10,000 samples of size 4, and record the mean for each of them in the vector U4.
+
+```{r, echo = F}
+# create the vector where we plan to store the sample means
+U4 <- rep(NA,10000)
+
+# now, define a for loop that generates the samples and stores the means in U4
+for(i in 1:10000){
+  # generate sample
+  mysample <- runif(n = 4, min = 0, max = 1) 
+  # store the sample mean in U4 in position i
+  U4[i] <- mean(mysample)
+}
+
+```
+
+
+
+**TASK 3.2** Investigate the sample means you generated in 3.1 by creating a histogram and a probability plot.  
+
+```{r, echo = F}
+gf_histogram(~U4)
+gf_qq(~U4) %>% gf_qqline()
+```
+
+
+
+
+**TASK 3.3**  Repeat your work from 3.1 and 3.2, but this time generate 10,000 samples of size 12 from Uniform(0,1). Record the sample mean each time in a variable named U12, and then create a histogram and normal plot for the sample means.
+
+```{r, echo = F}
+U12 <- rep(NA,10000)
+
+# now, define a for loop that generates the samples and stores the means in U4
+for(i in 1:10000){
+  # generate sample
+  mysample <- runif(n = 12, min = 0, max = 1) 
+  # store the sample mean in U4 in position i
+  U12[i] <- mean(mysample)
+}
+
+gf_histogram(~U12)
+gf_qq(~U12) %>% gf_qqline()
+```
+
+
+
+**TASK 3.4**  Repeat your work from 3.1 and 3.2 *again*, but this time generate 10,000 samples of size 30 from Uniform(0,1). Record the sample mean each time in a variable named U30, and then create a histogram and normal plot for the sample means.
+
+```{r, echo = F}
+U30 <- rep(NA,10000)
+
+# now, define a for loop that generates the samples and stores the means in U4
+for(i in 1:10000){
+  # generate sample
+  mysample <- runif(n = 30, min = 0, max = 1) 
+  # store the sample mean in U4 in position i
+  U30[i] <- mean(mysample)
+}
+
+gf_histogram(~U30)
+gf_qq(~U30) %>% gf_qqline()
+```
+
+
+
+**TASK 3.5** Are the sample means from samples of size 4 from the Uniform Distribution normally distributed?  Justify your answer.
+
+    **Response:** The sample means from the sample size of 4 do not appear to be normal distributed because the probability plot yields a non linear curve.  The ends of the probability plot
+    are significantly curved. 
+
+
+
+
+**TASK 3.6** The sample means from 3.3 and 3.4 (samples of sizes 12 and 30 respectively) appear normal.  Explain why the plots in 3.3 and 3.4 are so different from the plots in 2.3.
+
+    **Response:** The sample size of 4 is still very small.  The central limit theorem only applies to very large sample sizes (as n approaches infinity).  As the sample size gets larger 
+    the distribution of the sample meanse will appear more normal as shown in the sample sizes of 12 and 30 respectively.
+
+
+
+
+### CLT and the Exponential distribution
+
+In this section we do something similar, except that we draw samples of various sizes (4, 30, and 100) from an exponential distribution with $\lambda$=1.  
+
+**TASK 4.1** Use the code below to generate 10,000 samples of size 4 from an Exp(1) distribution, and record the mean for each of the samples in the vector E4.  The code also creates a histogram and normal probability plot for the sample means
+
+```{r, echo = F}
+# create the vector where we plan to store the sample means
+E4 <- rep(NA,10000)
+
+# now, define a for loop that generates the samples and stores the means in E4
+for(i in 1:10000){
+  # generate sample
+  mysample <- rexp(n = 4, rate = 1) 
+  # store the sample mean in E4 in position i
+  E4[i] <- mean(mysample)
+}
+
+gf_histogram(~E4)
+gf_qq(~E4) %>% gf_qqline()
+```
+
+**TASK 4.2**  Repeat your work from 4.1, but this time generate 10,000 samples of size 30 from Exp(1). Record the sample mean each time in a variable named E30, and then create a histogram and normal plot for the sample means.
+
+```{r, echo = F}
+# create the vector where we plan to store the sample means
+E30 <- rep(NA,10000)
+
+# now, define a for loop that generates the samples and stores the means in E4
+for(i in 1:10000){
+  # generate sample
+  mysample <- rexp(n = 30, rate = 1) 
+  # store the sample mean in E4 in position i
+  E30[i] <- mean(mysample)
+}
+
+gf_histogram(~E30)
+gf_qq(~E30) %>% gf_qqline()
+```
+
+**TASK 4.3**  Repeat your work from 4.1 *again*, but this time generate 10,000 samples of size 100 from Exp(1). Record the sample mean each time in a variable named U100, and then create a histogram and normal plot for the sample means.
+
+```{r, echo = F}
+# create the vector where we plan to store the sample means
+E100 <- rep(NA,10000)
+
+# now, define a for loop that generates the samples and stores the means in E4
+for(i in 1:10000){
+  # generate sample
+  mysample <- rexp(n = 100, rate = 1) 
+  # store the sample mean in E4 in position i
+  E100[i] <- mean(mysample)
+}
+
+gf_histogram(~E100)
+gf_qq(~E100) %>% gf_qqline()
+```
+
+
+
+**TASK 4.4** Are the sample means of 4 observations from the Exponential Distribution normally distributed when using samples of 4 observations?  Explain your answer.
+
+    **Response:**  The sample means of 4 observations is not normally distrubuted as shown by the significant curvature at the ends of the probability plot (prob plot not linear).
+
+
+
+
+**TASK 4.5** For the exponential distribution, are 30 observations in a sample enough for the sample mean to be considered normally distribution?
+
+    **Response:**  The sample means of 30 observations is not normally distributed as shown by the minor curvature at the ends of the probabi;ity plot (prob plot not linear)
+
+
+
+
+**TASK 4.6** For the exponential distribution, are 100 observations in a sample enough for the sample mean to be considered normally distribution?
+
+    **Response:** The sample means of 100 observations is normally distributed as shown by the linear nature of the probability plot.  However, there is some very slight curvature at the 
+    end of the probability plot, therefore a larger observation size would produce a much better normal distribution

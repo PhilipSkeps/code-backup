@@ -1,0 +1,30 @@
+---
+title: 'Quiz 1 R Shell'
+output: html_notebook
+---
+
+
+### introduction:
+
+You can use this document as a place to read in your data and write your code for Quiz 1.  You will need to write all your own code, but you can reference the labs that you already completed.
+ 
+
+
+```{r, echo = F, message = F}
+##  Run this piece of code to load the packages and your data
+
+# Clear Workspace
+rm(list = ls()) 
+
+# load packages we typically use for this class.
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+
+mydata <- read.csv(file.choose())
+```
+
+```{r, echo = F}
+head(mydata)
+t.test(SCORES ~ EXAM, data = mydata, paired = TRUE)
+mean(SCORES ~ EXAM, data = mydata)
+```

@@ -1,0 +1,195 @@
+---
+title: 'Lab 5-2: Hypothesis testing - difference between means and proportions'
+output:   html_notebook
+---
+
+### Objectives:
+
+For this lab you should...
+
+  - Learn the R code that runs hypothesis tests when the unknown parameter is $p_x - p_y$ or $\mu_x - \mu_y$.
+  - Collect your own data and compare it to another set of data via a hypothesis test.
+  - Read datasets into R and draw inference based on hypothesis tests.
+
+
+```{r preamble, echo = F, message = F}
+# Clear Workspace
+rm(list = ls())
+knitr::opts_chunk$set(echo=FALSE)
+
+
+
+# load packages we typically use for this class.
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+library(dplyr)
+```  
+
+# Part 1: Collect your own samples
+
+You would like to know if your average reaction time is better than that of your neighbor.  Keep in mind that a 'better' reaction time means a smaller one.  
+
+**TASK 1.0** What is an appropriate set of hypotheses to answer this research question?
+
+    **Responses** H0: mu_me - mu_neigh >= 0
+                  H1: mu_me - mu_neigh < 0
+    
+
+Go to <https://www.humanbenchmark.com/tests/reactiontime>.  This website will have you test your reaction time 10 times.  After each click, record your reaction time. You should end up with a sample size of 10.
+
+Create a data frame for both your and your neig,hbor's reaction times, using the code below. You will first enter your times and then your neighbor's times into the vector labeled Times, separated by commas.
+
+```{r, echo = F}
+mydata <- data.frame(
+     Person = c(rep("me",10),rep("neighbor",10)),
+     Times = c(273,258,272,228,256,320,245,262,243,259,233,247,246,242,266,235,234,219,234,238)
+      )
+
+head(mydata)
+```
+
+
+
+Now, use R to perform the hypothesis test by modifying the code below.  Make sure your alternative matches the hypotheses you wrote in Task 1.0.  
+
+```{r, echo = F}
+t.test(Times ~ Person, alternative = "less" , data = mydata)
+```
+
+**TASK 1.1** You were required to test whether your average reaction time is better than your neighbors.  Is the hypothesis test well-posed considering your data? Explain.
+
+    **Response** The hypothesis test is not well posed because the null hypothesis can never be rejected with this sample.  My neighbors mean is less than my mean 
+    agreeing with the null hypothesis.
+    
+**TASK 1.2**  Can you conclude your reaction time is better than your neighbor?  Use your results from the hypothesis test to justify your answer.
+
+    **Response** It cannot be concluded that my average reaction time is better than my neighbors as the p-value calculated (.9881) is greater than the testing level (0.05). 
+    
+
+# Part 2: A hypothesis test with dice
+
+Use a website like <https://random.org> or <https://www.calculator.net/dice-roller.html> to roll 30 six-sided die.  Count the number of fours you observe and write your result on the board.
+
+**TASK 2.0** Select another set of outcomes from the board to be the second sample.  Modify the code below to create a vector of your data and test the hypothesis to see if the probability of rolling a four was different for the two samples:
+
+```{r, echo = F}
+
+# Now perform the hypothesis test for a difference of proportions
+prop.test(x = c(6, 5), n = c(30, 30), alternative = "two.sided", correct = F)
+
+
+```
+
+
+**TASK 2.1** State the set of hypotheses that were used to run your hypothesis test.
+
+    **Response** H0: p1 - p2 == 0
+                 H1: p1 - p2 != 0
+  
+    
+
+**TASK 2.2**  State the values of $\hat{p}$ for you data and for your classmate's data.
+
+    **Response** p_hat = .2 (mine)
+                 p_hat = .167 (neigh)
+    
+**TASK 2.3** Report the p-value for your test.
+
+    **Response** p-value = 0.7386
+    
+**TASK 2.4** Can you conclude that the proportion of four's witnessed is different for different dice rollers?
+
+    **Response** We are unable to conclude that the proportion of four's witnessesd is different for different dice roles as the p-value for the above hypothesis test was found to be 
+    .7836 which is greater than the testing level 0.05.
+
+
+# Part 3: Paired Testing versus Two-sample testing
+
+The dataset ozone.csv (available in files on Canvas) represents a sample of 15 different years in which the thickness of the ozone column is measured in the months of January and February (in Dobson units: one millicentimeter of ozone at standard temperature and pressure).
+
+**TASK 3.0** Load the data.
+
+```{r, echo = F}
+mydata = read.csv(file.choose())
+head(mydata)
+```
+
+**TASK 3.1**  Construct a two-tailed hypothesis test for the difference in average thickness between January and February. 
+
+State your p-value and conclusion in context.
+
+    **Response** It cannot be concluded that there is a difference in average ozone thickness between January and Febuary as shown by the caluclated p-value being equal to
+    0.1285 which is greater than the testing level of 0.05
+    
+```{r, echo = F}
+t.test(Ozone ~ Month,data = mydata)
+```
+
+**TASK 3.2**  As you may have suspected, these data are, in fact, paired.  Perform a paired t-test for the difference in average thickness between January and February. 
+
+State your p-value and conclusion in context.
+
+    **Response** There is a statistically significant difference between the average thickness of a ozone patch in January and Febuary as shown by the calculated paired p-value being 
+    equal to 0.031 which is less than 0.05.
+    
+```{r, echo = F}
+t.test(Ozone ~ Month,data = mydata, paired = TRUE)
+``` 
+
+
+**TASK 3.3**  True/False:  Assuming the data are paired, the average thickness of the ozone column is different between January and February.
+
+    **Response** True for this set of data
+
+
+# Part 4: Type I and Type II Errors with Binomial Data
+
+We would like to generate 50 data points of Binomial data that has 25 trials and success probability p = 0.50 using rbinom. Type ?Rbinom in the console if you need reminders on creating binomial data).  
+
+**TASK 4.0**  Create five vectors of 50 data points.  Call them B1, B2, B3, B4, and B5.  Then use these five vectors to perform 5 hypothesis tests with the null $H_0: \mu = 12.25$.
+
+```{r, echo = F}
+B1 = rbinom(50,25,.5)
+B2 = rbinom(50,25,.5)
+B3 = rbinom(50,25,.5)
+B4 = rbinom(50,25,.5)
+B5 = rbinom(50,25,.5)
+t.test(B1,alternative="two.sided",mu = 12.25)
+t.test(B2,alternative="two.sided",mu = 12.25)
+t.test(B3,alternative="two.sided",mu = 12.25)
+t.test(B4,alternative="two.sided",mu = 12.25)
+t.test(B5,alternative="two.sided",mu = 12.25)
+```
+
+**TASK 4.1** State all five of your p-values from 4.0.
+
+    **Response** p-values = 0.1229 , 0.3781 , 0.9792 , 0.01397 , 0.02396
+    
+**TASK 4.2**  For all five of the p-values above, are any of the tests significant at the 5\% level?  How many?
+
+    **Response** 2 of the test (4 and 5) are significant at the 5% level 
+    
+**TASK 4.3**  Have any of these tests committed a Type 1 Error?  Explain
+
+    **Response** Non of the tests can commit a type 1 error because the H0 is false (true mean is 12.5 not 12.25)
+    
+**TASK 4.4**  Now using the same five datasets, perform five hypothesis tests against the null $H_0: \mu =  13$.  Report all five p-values below.
+
+    **Response** p-values = 0.7202 , 0.1646 , 0.05211 , 0.7266 , 0.8403
+    
+```{r, echo = F}
+t.test(B1,alternative="two.sided",mu = 13)
+t.test(B2,alternative="two.sided",mu = 13)
+t.test(B3,alternative="two.sided",mu = 13)
+t.test(B4,alternative="two.sided",mu = 13)
+t.test(B5,alternative="two.sided",mu = 13)
+```
+
+**TASK 4.5**  For all of your five p-values in 4.4, are any of the null hypotheses not rejected at the 5\% level?  How many?
+
+    **Response** all 5 of the p-values are greater than the 5% testing level therefore we are unable to reject the null hypothesis for any of the tests
+    
+**TASK 4.6** Have any of these tests committed a Type 2 Error?  Explain.
+
+    **Response** All of the test committed a type 2 error as the null hypothesis is false (true mean is 12.5) and was not rejected in any of the tests
+

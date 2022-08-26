@@ -1,0 +1,297 @@
+---
+title: 'Lab 1-1: Using R Markdown to explore data'
+output: html_notebook
+---
+
+
+### Objectives:
+
+For this lab you should...
+
+  - Read datasets into R
+  - Familiarize yourself with commonly used functions and model-centric syntax in R
+  - Provide summary statistics of a dataset
+  - visualize the dataset using histograms and boxplots 
+ 
+
+# Part 1: Getting ready to use data
+
+The following packages will need to be loaded into R before you begin the lab. To run a chunk of R code, click the green arrow symbol in the upper right of the gray chunk. If you would like to run line by line, hit Ctrl-Enter with your cursor next to the desired line.
+
+```{r, echo = F, message = F}
+##  NOTE - in all future documents/assignments this code will be included for you and you are expected to run it without prompting.
+
+
+# Clear Workspace
+rm(list = ls()) 
+knitr::opts_chunk$set(echo=FALSE)
+
+# load packages we typically use for this class.
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+
+
+```
+
+### The Happiness Data
+
+The happiness data set is from the 2021 World Happiness Report <https://Worldhappiness.report/ed/2021>.  Each observation in this dataset represents a country in the world. There are 14 variables observed about citizens opinions on their countries, characteristics of their countries, and Covid-19 related summaries.  A multitude of interesting questions can be posed (and answered!) using these data.
+
+**TASK 1.0** Download the dataset WorldHappiness.csv from the Lab 1.1 assignment page. Once you've downloaded it, using the following code to read it into R:
+
+```{r,echo = F}
+
+Hap <- read.csv(file.choose()) #select your file in its saved location when the prompt opens
+
+```
+
+**TASK 1.1** To ensure that you have successfully loaded the dataset, you can check using the function head(DataSetName), which displays the first six rows of the data, and glimpse(DataSetName), which provides a summary of the data frame.
+
+```{r,echo = F}
+# modify the code below
+
+head(Hap) # displays the first 6 rows of the dataset, including headers 
+glimpse(Hap) # provides a summary of the data frame
+
+```
+
+
+**TASK 1.2** Use your results from Task 1.1 to determine which columns are categorical data, and which are numeric:
+
+    **Response**
+
+    Categorical: Region, FemaleGovBoss, Island, Name
+    
+    Numeric: Happiness Score, Population2019, CovidDeaths2020, Median Age, InstitutionalTrust, ExcessDeaths,                  LogGDP, SocialSupport, HealthyLifeExpectancy, Freedom, PerceptionsOfCorruption
+ 
+
+### Model-centric approach to R
+
+For the purposes of our class, it's useful to learn a model-centric approach to R.  The psuedo-code below is going to be our foundation for the rest of the class: 
+
+`function( Y ~ X, data = DataSetName )`
+
+Here's a short description of each part in the pseudo-code above:
+
+- `function` is an R function that dictates something you want to do with your data e.g. 
+    - for example, `mean` calculates the mean
+- `Y` is the outcome of interest (response variable)  
+- `X` is some explanatory variable or you can use "1" as a placeholder if there is no explanatory variable  
+- `DataSetName` is the name of a data set loaded into the R environment
+
+A summary of the most commonly used functions for this class are provided at the bottom of this document.  In the work below you will be introduced to the functions and their uses one at a time in the context of answering research questions.
+
+## Research Question A: Are different regions of the world happier?
+
+To use the data to answer the research question, we could find data summaries such as average happiness, for each of the regions.  In this situation, HappinessScore is our response variable and Region is our explanatory variable.
+
+**TASK 2.1** Modify and run the code below to calculate the mean HappinessScore for each region.
+
+```{r,echo = F}
+
+mean(HappinessScore ~ Region, data = Hap)
+
+```
+
+**TASK 2.2**  Use the function 'favstats()', and model-centric syntax, to determine which region has the country with the highest happiness score.
+
+    **Response:** The country with the highest max happiness score is Western Europe.  However the country with                    the highest mean and median happiness score is North America and ANZ.
+  
+```{r, echo = F}
+favstats(HappinessScore ~ Region, data = Hap)
+
+```
+
+**TASK 2.3** Which summary statistics are calculated by the favstats() function?
+
+    **Response:** the minimum, the maximum, the Q1 (the point that is greater than 25% of the data), the Q3 (the                   point that is greater than 75% of the data), the median, the mean, the standard deviation, and                   the sample size.
+
+Now it's time to visualize the distribution of Happiness Score for the different reasons.  
+
+**TASK 2.4** Modify the code below to create a histogram of Happiness Score, without accounting for other variables.  What is the shape of the distribution: left-skewed, right-skewed, or roughly symmetric?
+
+    **Response:** roughly symmetric
+```{r,echo = F}
+
+gf_histogram(~ HappinessScore, data = Hap)
+
+```
+
+**TASK 2.5** Generate side-by-side boxplots of the HappinessScore, separated by Region. Write a sentence about what you observe in the figure.
+
+    **Response:** Many of the regions do not have normal distributions of the happiness score, instead                             many regions appear to be skewed.  Of the boxplots displayed the median happiness score is very                   dependent on the region.  The spread of the box plots is also very dependent on region.
+
+```{r,echo = F}
+#gf_boxplot(HappinessScore ~ Region, data = Hap)
+
+# if the axes labels aren't readable, try modifying and running the code below!
+ gf_boxplot(HappinessScore ~ Region, data = Hap) + coord_flip()
+
+```
+
+**TASK 2.6** Based on everything you've learned, do you think that happiness scores vary by region?
+
+    **Response:** As shown in the box plots above the median happiness scores vary significantly by                                region.  The spread of the box plots happiness score data also depends on region.
+                  Therefore, the happiness score must vary by region.
+    
+    
+#### Research Question B: Are countries run by female leaders happier?
+
+**TASK 3.1** Write and run code to determine whether the mean Happiness Score is higher or lower for countries with female leaders.  Hint:  the variable 'FemaleGovBoss' indicates whether a country is run by a female leader.
+
+    **Response:** The mean happiness score is higher for countries with female leaders.
+
+```{r,echo = F}
+mean(HappinessScore ~ FemaleGovBoss, data = Hap)
+
+```
+**TASK 3.2** How many countries are governed by female leaders? You can tabulate observations of a categorical variable using the 'tally' command.  Modify the code below to answer the question.
+
+    **Response:** there are 22 countries governed by female leaders.
+    
+```{r,echo = F}
+tally( ~ FemaleGovBoss, data = Hap)
+```
+
+
+**TASK 3.3** Create an appropriate visual summary to investigate research question B.
+
+```{r,echo = F}
+gf_boxplot(HappinessScore ~ FemaleGovBoss, data = Hap) + coord_flip()
+
+```
+
+**TASK 3.4** Based on what you learned in tasks 3.1 and 3.3, what do you think the answer to research question B would be?
+
+    **Response:** As can be seen by the box plot above, the nations with female leaders have a higher mean                         happiness score than nations with non female leaders.  The nations with female leaders also                      have a lower spread than nations with non female leaders showing a larger group of people with                   greater happiness than non female leading nations.  However, the female lead nations had a much                   lower sample size than non female lead nations. 
+    
+    
+
+## Research Question C: Are Island nations more likely to have female leaders?
+
+
+**TASK 4.1** Use R tally up how many countries are islands with female leaders, islands are male leaders, not islands with female leaders, and not islands with male leaders.  Modify the code below to extract the numbers.
+
+```{r, echo = F}
+tally(FemaleGovBoss ~ Island, data = Hap)
+```
+For a research question like this one that involves two binary variables, it is useful to calculate and compare two proportions:
+
+**TASK 4.2**  What proportion of Island Nations have female leaders?  You should calculate (# island nations with female leaders)/(# island nations)
+
+    **Response:** the proportion of Island Nations that have female leaders 0.150
+    
+```{r}
+# you can use this R chunk as a calculator if needed
+3 / 20
+```
+
+  
+**TASK 4.3**  What proportion of non-Island Nations have female leaders? You should calculate (# non-island nations with female leaders)/(# non-island nations)
+
+    **Response:** the proportion of non-Island Nations that have female leaders is 0.148
+    
+```{r}
+# you can use this R chunk as a calculator if needed
+(19) / (109 + 19)
+```
+
+To visualize the data as it relates to this question, you should make side-by-side or stacked barcharts.
+  
+**TASK 4.4**  Modify the code below to create a side by side barchart.  Notice the syntax is a little different; you should try different options for X and Y until you have Islands on the bottom and different colors for FemaleGovBoss.
+
+```{r, echo = F}
+gf_bar(~Island, fill =  ~ FemaleGovBoss, data = Hap, position = position_dodge())
+```
+
+**TASK 4.5** Based on your answers to Tasks 4.1--4.4, what do you think the answer to research question C would be?
+
+    **Response:** The proportion of island nations that have female leaders and non island nations that have female leaders do not differ by a large extent (~0.002).  From this observation it can be seen that island nations are not more likely to have a female leader.  This conclusion can also be seen in the stacked bar charts seen above.  The proportion of blue bars to red charts in both non island nations and island nations is roughly the same.  A larger sample size is needed for a stronger conclusion.
+
+
+## Research Question D: Which of the quantitative variables are related to Happiness Score?
+
+To answer this question, we consider plots that visualize the relationship between two quantitative variables. A scatterplot is simply an (x,y) plot in the Cartesian plane. Using our Y ~ X format, the Y variable will be along the Y axis. 
+
+**TASK 5.1** Modify the code below to generate a scatterplot of the HappinessScore versus the Institutional Trust.
+
+
+```{r,echo = F}
+gf_point(HappinessScore ~ InstitutionalTrust, data = Hap)
+
+```
+**TASK 5.2** Write code and produce scatterplots of the HappinessScore versus: SocialSupport, HealthyLifeExpectancy, and Freedom. 
+
+```{r,echo = F}
+gf_point(HappinessScore ~ SocialSupport, data = Hap)
+gf_point(HappinessScore ~ HealthyLifeExpectancy, data = Hap)
+gf_point(HappinessScore ~ Freedom, data = Hap)
+
+``` 
+
+**TASK 5.3**  Comment on which of the four variables that have been plotted suggest a strong linear relationship with the Happiness Score. 
+
+    **Response** Healthy life expectancy suggests a strong linear relationship with the happiness score.
+
+**Response** 
+
+
+## Research Question E: Which variables are related to Covid Deaths 2020??
+
+A strength of R is its ability to quickly and easily produce sophisticated data visualizations.  You will use  curiosity and tools in R to create visualizations that explore this research question.
+
+Use the code below to remind yourself which variables are available in this dataset.  Choose a quantitative variable that you think will be related to CovidDeaths2020.
+
+**TASK 6.1** Make a scatterplot to examine the relationship between Covid Deaths in 2020 and the variable you chose. 
+```{r,echo = F}
+head(Hap)
+gf_point(CovidDeaths2020 ~ InstitutionalTrust, data = Hap)
+``` 
+
+**TASK 6.2** Now, color the points in your plot based on the values of a third variable such as FemaleGovBoss, Island, or Region. You could also choose a quantitative variable, if you desired.
+
+```{r,echo = F}
+
+gf_point(CovidDeaths2020 ~ InstitutionalTrust, col = ~ Region, data = Hap)
+
+
+``` 
+**TASK 6.3** Now we can add one more layer, based on a categorical variable.  Choose one of the binary variables FemaleGovBoss or Island that you haven't already included and modify the code below:
+
+```{r, echo = F}
+gf_point(CovidDeaths2020 ~ InstitutionalTrust | Island, col = ~Region, data = Hap)
+```
+
+
+**TASK 6.4**  Make two interesting comments about what you learned about the variables you chose and covid deaths in 2020.
+
+    **Response:** SouthEast asia in 2020 appeared to have remarkably low covid deaths and high institutional trust.  The greatest amount of covid deaths in 2020 occurred in a non island nation.
+    
+
+# Epilogue
+
+Below are some summaries you can reference at any time.
+
+#### Numerical summaries
+
+The primary numerical summaries used in this course include the mean, the five-number summary, and the standard deviation.  The functions below calculate these summaries for a single variable, or for that variable based on the value of a second categorical variable.
+
+  - mean(~ Y, data = DataSetName)  # mean of Y without considering other variables
+  - mean(Y ~ X, data = DataSetName)  # mean of Y for different values of X
+  - sd(~ Y, data = DataSetName)  # standard deviation of Y 
+  - sd(Y ~ X, data = DataSetName)  # standard deviation of Y for different values of X
+  - favstats(~ Y, data = DataSetName)  # summary statistics of Y 
+  - favstats(Y ~ X, data = DataSetName)  # summary statistics of Y for different values of X
+
+#### Visual summaries
+
+The primary graphical representations used in this course will be a barcharts, boxplots, histograms and scatterplots. Each plot helps to visualize different aspects of a dataset. 
+
+The functions that will be used to generate these plots are:
+
+  - gf_boxplot(Y ~ X, data = DataSetName) # boxplot of Y for each value of X, if specified
+  - gf_histogram(~Y, data = DataSetName) # histogram of Y
+  - gf_point(Y ~ X, data = DataSetName) # scatterplot of Y versus X
+  - gf_bar( ~Y, data = DataSetName) # Bar chart for a single variable
+  - gf_bar( ~ X, fill = ~ Y, data = DataSetName, position = position_dodge()) # side-by-side bar chart
+  - gf_bar( ~ X, fill = ~ Y, data = DataSetName) # stacked bar chart

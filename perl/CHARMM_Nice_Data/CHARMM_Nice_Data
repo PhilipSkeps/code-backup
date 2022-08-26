@@ -1,0 +1,253 @@
+#!/usr/bin/perl
+
+$DESCR = "DYNA";
+main();
+
+sub main() {
+
+    $loadSettings_ref = loadSettings();
+    
+    headerLine( $loadSettings_ref );
+
+    ( $regExGuide_ref, $regExSearchUniq_ref ) = loadRegEx( $loadSettings_ref );
+
+    matchLine( $regExGuide_ref, $regExSearchUniq_ref );
+
+}
+
+
+
+sub loadSettings() {
+    my @settingsToLoad;
+    open(SETTINGS,"/u/sa/br/pskeps/bin/CHARMM_Nice_Data/settings") || die "unable to open the settings file\n";
+    while(<SETTINGS>) {
+        if($_=~/(\w+)\s+yes/) {
+            push(@settingsToLoad,$1);
+        }
+    }
+    close(SETTINGS);
+    return \@settingsToLoad;
+}
+
+
+
+sub headerLine() {
+    my $loadSettings_ref = shift;
+    my @loadSettings = @$loadSettings_ref;
+    map { 
+        printf("%-14s",$_); 
+    } @loadSettings;
+    print "\n";
+}
+
+
+
+sub loadRegEx() {
+    my $loadSettings_ref = shift;
+    my @loadSettings = @$loadSettings_ref;
+    my @regExSearch;
+    my @lineLocation;
+    map {
+        if ( /\btime\b/ ) {
+            push(@regExSearch,"$DESCR>");
+            push(@lineLocation,14);
+        }
+        elsif ( /\btot_ene\b/ ) {
+            push(@regExSearch,"$DESCR>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\bkin_ene\b/ ) {
+            push(@regExSearch,"$DESCR>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\bpot_ene\b/ ) {
+            push(@regExSearch,"$DESCR>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\btemp\b/ ) {
+            push(@regExSearch,"$DESCR>");
+            push(@lineLocation,66);
+        }
+        elsif ( /\brms_grad\b/ ) {
+            push(@regExSearch,"$DESCR PROP>");
+            push(@lineLocation,14);
+        }
+        elsif ( /\bhfcte\b/ ) {
+            push(@regExSearch,"$DESCR PROP>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\bhfcp\b/ ) {
+            push(@regExSearch,"$DESCR PROP>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\bhfce\b/ ) {
+            push(@regExSearch,"$DESCR PROP>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\bvkinene\b/ ) {
+            push(@regExSearch,"$DESCR PROP>");
+            push(@lineLocation,66);
+        }
+        elsif ( /\bbon_ene\b/ ) {
+            push(@regExSearch,"$DESCR INTERN>");
+            push(@lineLocation,14);
+        }
+        elsif ( /\bang_ene\b/ ) {
+            push(@regExSearch,"$DESCR INTERN>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\buB_ene\b/ ) {
+            push(@regExSearch,"$DESCR INTERN>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\bdih_ene\b/ ) {
+            push(@regExSearch,"$DESCR INTERN>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\bimp_ene\b/ ) {
+            push(@regExSearch,"$DESCR INTERN>");
+            push(@lineLocation,66);
+        }
+        elsif ( /\bvdw_ene\b/ ) {
+            push(@regExSearch,"$DESCR EXTERN>");
+            push(@lineLocation,14);
+        }
+        elsif ( /\bele_ene\b/ ) {
+            push(@regExSearch,"$DESCR EXTERN>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\bhbo_ene\b/ ) {
+            push(@regExSearch,"$DESCR EXTERN>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\baspe\b/ ) {
+            push(@regExSearch,"$DESCR EXTERN>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\bude\b/ ) {
+            push(@regExSearch,"$DESCR EXTERN>");
+            push(@lineLocation,66);
+        }
+        elsif ( /\bext_vir\b/ ) {
+            push(@regExSearch,"$DESCR PRESS>");
+            push(@lineLocation,14);
+        }
+        elsif ( /\bint_vir\b/ ) {
+            push(@regExSearch,"$DESCR PRESS>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\bevcp\b/ ) {
+            push(@regExSearch,"$DESCR PRESS>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\bivcp\b/ ) {
+            push(@regExSearch,"$DESCR PRESS>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\bucel_vol\b/ ) {
+            push(@regExSearch,"$DESCR PRESS>");
+            push(@lineLocation,66);
+        }
+        elsif ( /\bivdw_ene\b/ ) {
+            push(@regExSearch,"$DESCR IMAGES>");
+            push(@lineLocation,14);
+        }
+        elsif ( /\biele_ene\b/ ) {
+            push(@regExSearch,"$DESCR IMAGES>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\bihbo_ene\b/ ) {
+            push(@regExSearch,"$DESCR IMAGES>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\brxnf_ene\b/ ) {
+            push(@regExSearch,"$DESCR IMAGES>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\beele_ene\b/ ) {
+            push(@regExSearch,"$DESCR IMAGES>");
+            push(@lineLocation,66);
+        }
+        elsif ( /\bpat_ene\b/ ) {
+            push(@regExSearch,"$DESCR XTLE>");
+            push(@lineLocation,27);
+        }
+        elsif ( /\bsurftens\b/ ) {
+            push(@regExSearch,"$DESCR XTLE>");
+            push(@lineLocation,40);
+        }
+        elsif ( /\bppot_ene\b/ ) {
+            push(@regExSearch,"$DESCR XTLE>");
+            push(@lineLocation,53);
+        }
+        elsif ( /\bp_a\b/ ) {
+            push(@regExSearch,"$DESCR XTLE>");
+            push(@lineLocation,66);
+        }
+    } @loadSettings;
+
+    my $regExSearchUniq_ref = uniq( \@regExSearch );
+    my @regExSearchUniq = @$regExSearchUniq_ref;
+    map {
+        my $firstWord = $_;
+        my @array;
+        my $count = 0;
+        map {
+            if ( $_ =~ /^$firstWord$/ ) {
+                push(@array,@lineLocation[$count]);
+            }
+            $count++;
+        } @regExSearch;
+        $regExGuide{$firstWord} = [ @array ];
+    } @regExSearchUniq;
+
+    return \%regExGuide, \@regExSearchUniq;   
+}
+
+
+
+sub matchLine() {
+    my $regExGuide_ref = shift;
+    my $regExSearchUniq_ref = shift;
+    my @regExSearchUniq = @$regExSearchUniq_ref;
+    my %regExGuide = %$regExGuide_ref;
+    while(<>) {
+        my $line = $_;
+        if ( $_ =~ /^$DESCR.*>/ ) { $true = 1}
+        if ( $_ !~ /^$DESCR.*>/ && $true == 1) {
+            $true = 0;
+            print "\n";
+        }
+        map {
+            my $firstWord = $_;
+            if ( $line =~ /^$firstWord\s+/ ) {
+                my $regExSearch_ref = $regExGuide{$firstWord};
+                my @regExSearch = @$regExSearch_ref;
+                map {
+                    printf("%-14s",substr($line,$_,13));
+                } @regExSearch;
+            }
+        } @regExSearchUniq;
+    }
+}
+
+
+
+sub uniq() {
+    my $array_ref = shift;
+    my @array = @$array_ref;
+    push(@arrayUniq,shift(@array));
+    map {
+        my $element = $_;
+        my $boolFound = 0;
+        map {
+            if ( $element =~ /^$_$/ ) {
+                $boolFound = 1;
+            }
+        } @arrayUniq;
+        if ( $boolFound == 0 ) {
+            push(@arrayUniq,$element);
+        }
+    } @array;
+    return \@arrayUniq;
+}

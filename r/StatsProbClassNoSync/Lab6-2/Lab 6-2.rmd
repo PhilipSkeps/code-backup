@@ -1,0 +1,217 @@
+---
+title: 'Lab 6-2: Linear Regression'
+output:   html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+rm(list = ls()) #clear the workspace
+library(mosaic, warn.conflicts = FALSE) 
+library(ggformula, warn.conflicts = FALSE)
+```
+
+
+### Objectives:
+
+For this lab you should...
+
+  - calculation correlation between variables and make predictions using a regression line.
+  - Check the underlying assumptions of a linear regression.
+  - Examine the results of hypothesis tests for parameters of the regression line.
+  
+# Part 0: R commands you will need
+
+  - gf_point(y ~ x, data = DataSetName) generates a scatterplot with x on the horizontal axis and y on the vertical axis.  
+  - cor(y ~ x, data = DataSetName) will find the correlation between x and y.
+  - lm(y ~ x, data = DataSetName) will fit the linear model that uses x to predict y. You should name the model object.
+  - summary(mymodel) will generate summaries of your linear model object.
+  - plot(mymodel, which = 1) will generate the residuals versus fitted values plot.
+  - plot(mymodel, which = 2) will generate the qq-plot of the residuals.
+
+# Part 1: Predict Exam Scores using GPA
+
+It has been hypothesized that student GPA's should be correlated with their scores on achievement exams (ExamScore). These data are collected for a set of 20 students. You will look for a possible linear relationship, compute the correlation coefficient and the regression line.
+
+**TASK 1.0** Run the code below to read in the dataset 'GPAandExamScores.csv', available in the Files section of our Canvas course.
+  
+```{r, echo = F}
+GPA <- read.csv(file.choose())
+head(GPA)
+```
+
+**TASK 1.1** Create a scatterplot to explore the relationship between GPA and Exam Scores, letting Exam Scores be the response variable.  Based on your figure, what do you believe would be a good estimate for r, the correlation coefficient?
+
+    **Response** a good estimate for r is roughly .5 based on the figure
+```{r, echo = F}
+gf_point(ExamScore ~ GPA, data = GPA)
+```
+
+**TASK 1.2** Calculate the correlation coefficient using R and report its value.
+
+    **Response** r = .524
+```{r, echo = F}
+cor(ExamScore ~ GPA, data = GPA)
+```
+
+**TASK 1.3** Fit the regression line using R.  What are the values for $\hat{\beta_0}$ and $\hat{\beta_1}}$?
+
+    **Response** beta_0 = 52.689 beta_1 = 9.662
+```{r, echo = F}
+ExamScoreModel = lm(ExamScore ~ GPA, data = GPA)
+ExamScoreModel
+```
+
+**TASK 1.4** Write the equation for the regression line to predict Exam Score using GPA.
+
+    **Response** ExamScore = 52.689 + 9.662 * GPA
+
+
+**TASK 1.5** Would you use this line to predict an achievement score based on a GPA of 3.5? If yes, compute the estimate. If not, explain why.
+
+    **Response** I would use this line to predict an achievement score based on a GPA of 3.5 as the p-value for the slope of the linear regression model is less 
+     than the testing level (.05) with a value of .018.  The estimate is 86.506.
+```{r, echo = F}
+summary(ExamScoreModel)
+52.689 + 9.662 * 3.5
+```
+
+# Part 2: Checking the Assumptions
+
+When constructing a linear regression, it is important to consider the residuals. A residual is the distance between the true $y_i$ data point and the predicted $\hat{y_i}$. Use the Assumptions.csv dataset from Canvas for this Section.
+
+You will create a regression line and determine if the data are appropriate for a linear regression model.
+
+**TASK 2.0** Run the code below to read in the dataset 'Assumptions.csv', available in the Files section of our Canvas course.
+  
+```{r, echo = F}
+mydata <- read.csv(file.choose())
+head(mydata)
+```
+
+**TASK 2.1**  Create a scatterplot relating X and Y from the assumptions data.  Based on what you observed, does the relationship between X and Y appear linear?
+
+    **Response** The relationship between X and Y appears to be highly linear.
+```{r, echo = F}
+gf_point(Y ~ X, data = mydata)
+```
+
+**TASK 2.2** What is the correlation coefficient for these data?
+
+    **Response** r = .996
+```{r, echo = F}
+cor(Y ~ X, data = mydata)
+```
+
+**TASK 2.3**  What is the equation of the least squares line predicting Y using X?
+
+    **Response** Y = 9.028 + 11.337 * X
+```{r, echo = F}
+YModel = lm(Y ~ X, data = mydata)
+YModel
+```
+
+**TASK 2.4** Create the fitted values vs residuals plot.   Does this figure suggest that the linearity condition is met?
+
+    **Response** This residuals vs fitted values plot suggests that the linearity condition is not met as there is a clear pattern in the data.
+```{r, echo = F}
+plot(YModel, which=1)
+```
+
+**TASK 2.5** Create the normal probability plot of the residuals.  Does it suggest that the residuals are normally distributed?  Explain.  
+
+    **Response** This pplot suggests that the residuals are normally distributed because the majority of data points except for a few outliers hug the qi = zi line of
+    the probability plot.
+```{r, echo = F}
+plot(YModel, which=2)
+```
+
+# Part 3: Multiple predictors
+
+We have been constructing linear regression models with one predictor. We will explore a few options for how to choose a model if multiple predictors are available. For this portion, you will need to call in the CarsData.csv dataset, available on Canvas.
+
+**TASK 3.0** Use the code below to read the data into your workspace and explore the first six rows of the data.  There is a column for MPG (miles per gallon), WT (weight of the car), and HP (horsepower of the car). Both WT and HP may be good predictors of miles per gallon in a car.
+
+```{r, echo = F}
+cars <- read.csv(file.choose())
+head(cars)
+```
+
+**TASK 3.1** Create a linear regression model that predicts miles per gallon with weight.  
+
+```{r, echo = F}
+# hint - use a lm() statement and save it as a model object, then use summary(mymodel)
+WTModel = lm(MPG ~ WT, data = cars)
+summary(WTModel)
+WTModel
+```
+
+Complete the table below with R-squared and the p-value for the coefficient of weight ($H_0:\beta_1 = 0$):
+
+ | R-squared |  Weight  | 
+ |:---------:|:--------:|
+ |   .8155   | 8.89e-15 |
+ 
+Do you believe that weight is a reasonable predictor for miles per gallon?  Explain.
+
+    **Response**  The Wieght is a reasonable predictor for the miles per gallon as the R-squared of .8155 showed strong correlation with a p-value of
+                  essentially zero allowing us to reject the null beta_1 = 0 and accept H1 which demonstrates correlation.
+
+
+**TASK 3.2** Now create a linear regression model that predicts miles per gallon using horsepower. 
+
+```{r, echo = F}
+# hint - use a lm() statement and save it as a model object, then use summary(mymodel)
+HPModel=lm(MPG ~ HP, data = cars)
+summary(HPModel)
+HPModel
+
+```
+
+Complete the table below with R-squared and the p-value for the coefficient of horsepower ($H_0:\beta_1 = 0$):
+
+ | R-squared | Horsepower | 
+ |:---------:|:----------:|
+ |  .759     |1.12e-12    |
+ 
+ Do you believe that horsepower is a reasonable predictor for miles per gallon?  Explain.
+
+    **Response** Horsepower is also a reasonable predictor for miles per gallon demonstrating a strong correlation with a R-Squared of .7591 and a p-value
+                 of 0 allowing us to reject the null and accept the alternative demonstrating correlation.
+
+
+
+**TASK 3.3** Use the code below to fit a model that uses both horsepower and weight to predict miles per gallon.  Generate the model summary.
+
+```{r, echo = F}
+FullModel <- lm(MPG ~ WT + HP, data = cars)
+summary(FullModel)
+```
+
+Complete the table below with R-squared and the p-values for the coefficients:
+
+ | R-squared | Horsepower | Weight | 
+ |:---------:|:----------:|:-------|
+ |  .8272    |0.133815    |0.000712|
+ 
+Do you believe that both weight and horsepower are reasonable predictors for miles per gallon in this model?  Explain.
+
+    **Response**  The p-value for the horsepower was .133815 which prevents us from rejecting the null hypothesis and proving correlation, therefore it is not a reasonable
+    predictor for MPG.  weight on the other hand had a much smaller p-value of 0.000712 which allows us to reject the null hypothesis, proving correlation.  It is therefore a 
+    reasonable predictor of MPG
+    
+**TASK 3.4** Of the three models you created, which has the highest coefficient of determination?
+
+    **Response** The Combined model had the highest coefficient of determination.
+    
+**TASK 3.5**  What is your preferred model for predicting miles per gallon? Explain.
+
+    **Response** The preferred model is the MPG based on weight.  As shown in the combined model the HP was an ineffective predictor of MPG and gave a very minimal increase to
+    the coefficient of determination while greatly increasing complexity.  Therefore, it was chosen to weight simplicity over very minor improvements in coefficient of 
+    determination
+
+
+
+
+
+
