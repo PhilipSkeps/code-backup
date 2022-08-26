@@ -3,3 +3,7 @@ r/StatsProbClassNoSync/
 TODO
 **/.vscode
 .vscode
+.RData
+**/.RData
+.RHistory
+**/.RHistory
