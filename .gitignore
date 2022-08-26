@@ -5,5 +5,5 @@ TODO
 .vscode
 .RData
 **/.RData
-.RHistory
-**/.RHistory
+.Rhistory
+**/.Rhistory
