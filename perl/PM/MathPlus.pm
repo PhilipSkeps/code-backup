@@ -1,8 +1,11 @@
 #!/usr/bin/perl
 
-package mathPlus;
+package MathPlus;
 
 use Term::ANSIColor;
+
+use strict;
+use warnings;
 
 # should include finite element analysis subroutine
 
@@ -22,9 +25,9 @@ sub fFirstDeriv {
 
     for( my $i = 0; $i < $arrayLengthX - 1; $i++ ) {
 
-        my $derivVal = ( @arrayY[$i + 1] - @arrayY[$i] ) / ( @arrayX[$i + 1] - @arrayX[$i] );
+        my $derivVal = ( $arrayY[$i + 1] - $arrayY[$i] ) / ( $arrayX[$i + 1] - $arrayX[$i] );
         push(@arrayOutY,$derivVal);
-        push(@arrayOutX,@arrayX[$i]);
+        push(@arrayOutX,$arrayX[$i]);
 
     }
 
@@ -50,13 +53,13 @@ sub bFirstDeriv {
 
     for( my $i = 1; $i < $arrayLengthX; $i++ ) {
 
-        my $derivVal = ( @arrayY[$i] - @arrayY[$i - 1] ) / ( @arrayX[$i] - @arrayX[$i - 1] );
+        my $derivVal = ( $arrayY[$i] - $arrayY[$i - 1] ) / ( $arrayX[$i] - $arrayX[$i - 1] );
         push(@arrayOutY,$derivVal);
-        push(@arrayOutX,@arrayX[$i]);
+        push(@arrayOutX,$arrayX[$i]);
 
     }
 
-    return(\@arryOutX,\@arrayOutY);
+    return(\@arrayOutX,\@arrayOutY);
 
 }
 
@@ -78,13 +81,13 @@ sub mFirstDeriv {
 
     for( my $i = 1; $i < $arrayLengthX - 1; $i++ ) {
 
-        my $derivVal = ( @arrayY[$i + 1] - @arrayY[$i - 1] ) / ( ( @arrayX[$i + 1] - @arrayX[$i - 1] ) );
+        my $derivVal = ( $arrayY[$i + 1] - $arrayY[$i - 1] ) / ( ( $arrayX[$i + 1] - $arrayX[$i - 1] ) );
         push(@arrayOutY,$derivVal);
-        push(@arrayOutX,@arrayX[$i]);
+        push(@arrayOutX,$arrayX[$i]);
 
     }
 
-    return(\@arryOutX,\@arrayOutY);
+    return(\@arrayOutX,\@arrayOutY);
 
 }
 
@@ -106,13 +109,13 @@ sub mSecondDeriv {
 
     for( my $i = 1; $i < $arrayLengthX - 1; $i++ ) {
 
-        my $derivVal = ( @arrayY[$i + 1] - 2 * @arrayY[$i] + @arrayY[$i - 1] ) / ( ( @arrayX[$i + 1] - @arrayX[$i] ) ** 2 );
+        my $derivVal = ( $arrayY[$i + 1] - 2 * $arrayY[$i] + $arrayY[$i - 1] ) / ( ( $arrayX[$i + 1] - $arrayX[$i] ) ** 2 );
         push(@arrayOutY,$derivVal);
-        push(@arrayOutX,@arrayX[$i]);
+        push(@arrayOutX,$arrayX[$i]);
 
     }
 
-    return(\@arryOutX,\@arrayOutY);
+    return(\@arrayOutX,\@arrayOutY);
 
 }
 
@@ -132,7 +135,7 @@ sub lRiemannSum {
     if ( &__WARN__($arrayLengthX,$arrayLengthY) ) { exit -1 }
 
     for(my $i = 0; $i < $arrayLengthX - 1; $i++) {
-        $SUM += @arrayY[$i] * ( @arrayX[$i + 1] - @arrayX[$i] );
+        $SUM += $arrayY[$i] * ( $arrayX[$i + 1] - $arrayX[$i] );
     }
 
     return($SUM);
@@ -155,7 +158,7 @@ sub rRiemannSum {
     if ( &__WARN__($arrayLengthX,$arrayLengthY) ) { exit -1 }
 
     for(my $i = 1; $i < $arrayLengthX; $i++) {
-        $SUM += @arrayY[$i] * ( @arrayX[$i] - @arrayX[$i - 1] );
+        $SUM += $arrayY[$i] * ( $arrayX[$i] - $arrayX[$i - 1] );
     }
 
     return($SUM);
@@ -178,7 +181,7 @@ sub trapSum {
     if ( &__WARN__($arrayLengthX,$arrayLengthY) ) { exit -1 }
 
     for(my $i = 1; $i < $arrayLengthX; $i++) {
-        $SUM += ( ( @arrayY[$i] + @arrayY[$i - 1] ) * ( @arrayX[$i] - @arrayX[$i - 1] ) ) / 2;
+        $SUM += ( ( $arrayY[$i] + $arrayY[$i - 1] ) * ( $arrayX[$i] - $arrayX[$i - 1] ) ) / 2;
     }
 
     return($SUM);

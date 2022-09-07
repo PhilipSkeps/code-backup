@@ -1,9 +1,12 @@
 #!/usr/bin/perl
 
-package statFunc;
+package StatFunc;
+
+use strict;
+use warnings;
 
 use POSIX;
-use mathPlus; 
+use MathPlus; 
 
 # create normal function analytics C.I / p-value
 
@@ -20,7 +23,7 @@ sub Quartiles {
     my $firstIndex = floor($medianIndex);
     my $secondIndex = ceil($medianIndex);
 
-    my $quartile = ( @sortArray[$firstIndex] + @sortArray[$secondIndex] ) / 2;
+    my $quartile = ( $sortArray[$firstIndex] + $sortArray[$secondIndex] ) / 2;
 
     return($quartile);
 
@@ -30,10 +33,10 @@ sub IQR {
 
     my $array_ref = shift;
 
-    $firstQuartile = &Quartiles($array_ref,0.25);
-    $thirdQuartile = &Quartiles($array_ref,0.75);
+    my $firstQuartile = &Quartiles($array_ref,0.25);
+    my $thirdQuartile = &Quartiles($array_ref,0.75);
 
-    $interQR = $thirdQuartile - $firstQuartile;
+    my $interQR = $thirdQuartile - $firstQuartile;
 
     return($interQR);
 
@@ -57,7 +60,7 @@ sub removeOutliers {
 
     while($switch ne "FALSE") {
 
-        if ( @sortArray[0] < $lowerFence ) {
+        if ( $sortArray[0] < $lowerFence ) {
             splice(@sortArray,0,1);
         } else {
             $switch = "FALSE"
@@ -66,11 +69,11 @@ sub removeOutliers {
     }
 
     my $arrayLength = @sortArray;
-    my $switch = "TRUE";
+    $switch = "TRUE";
 
     while($switch ne "FALSE") {
 
-        if ( @sortArray[-1] > $upperFence ) {
+        if ( $sortArray[-1] > $upperFence ) {
             splice(@sortArray,-1,1);
         } else {
             $switch = "FALSE"
@@ -93,7 +96,7 @@ sub mean {
     my $sum;
 
     for ( my $i = 0; $i < $arrayLength; $i++ ) {
-        $sum += @array[$i];
+        $sum += $array[$i];
     }
 
     my $mean = $sum / $arrayLength;
@@ -113,6 +116,9 @@ sub variance {
     my @array = @$array_ref;
     my $arrayLength = @array;
 
+    my $denom;
+    my $var;
+
     if ($dataType eq "P") {
         $denom = $arrayLength;
     } else {
@@ -120,7 +126,7 @@ sub variance {
     }
 
     for ( my $i = 0; $i < $arrayLength; $i++ ) {
-        $var += ( ( @array[$i] - $mean ) ** 2 ) / ( $denom );
+        $var += ( ( $array[$i] - $mean ) ** 2 ) / ( $denom );
     }
 
     return($var);
