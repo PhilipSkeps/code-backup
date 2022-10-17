@@ -33,6 +33,8 @@
     #define TODO(Statement)
 #endif
 
+#define UNUSED(x) #x;
+
 // DEBUG
 #ifdef DEBUG
     #define DEBUG_PRINT(fmt, args...) fprintf(stderr, "%sDEBUG: %s:%d:%s(): " fmt "\n%s", \
