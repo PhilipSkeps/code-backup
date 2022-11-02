@@ -1,0 +1,8 @@
+#!/bin/bash
+
+gcc -c -O3 -Wall -g hashMap.c -o hashMap.o
+ar -rc libdc.a *.o
+mv libdc.a ../LibPS
+rm *.o
+cp -f hashMap.h ../IncPS
+

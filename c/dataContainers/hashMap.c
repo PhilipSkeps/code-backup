@@ -1,6 +1,7 @@
 #include "hashMap.h"
 
 #define PRIME_SIZE 62
+#define MAXLOAD 0.7
 
 const static size_t prime[] = {
   /* 0     */ 5ul,
@@ -75,22 +76,21 @@ int hash2(const size_t Key, const size_t Prime) {
     return Prime - (Key % Prime);
 }
 
-size_t index(const size_t Key, const hash_map const * HashMap) {
+size_t index_node(const size_t Key, const hash_node * NodeArray, size_t Size) {
 
-    size_t index1 = hash1(Key, prime[HashMap->prindx]);
+    size_t index1 = hash1(Key, Size);
 
-    if ( HashMap->narray[index1].bucket == NULL ) {
+    if ( NodeArray[index1].bucket == NULL ) {
         
         return index1;
     
     } else {
 
-        for ( int i = 0; i < prime[HashMap->prindx]; ++i ) {
+        for ( int i = 0; i < Size * 100; ++i ) {
 
-            size_t index2 = (index1 - i * hash2(Key, prime[HashMap->prindx])) % prime[HashMap->prindx];
-            index2 < 0 ? prime[HashMap->prindx] + index2 : index2;
+            size_t index2 = (index1 + i * hash2(Key, Size)) % Size;
 
-            if ( HashMap->narray[index2].bucket == NULL ) {
+            if ( NodeArray[index2].bucket == NULL ) {
                 
                 return index2;
 
@@ -100,37 +100,81 @@ size_t index(const size_t Key, const hash_map const * HashMap) {
 
     }
 
+    fprintf(stderr, "Map failed to find an empty node\n");
+    exit(EXIT_FAILURE);
+
 }
 
 void rehash(hash_map * HashMap) {
-    
-    hash_map * new = malloc(sizeof(hash_map));
 
-    new->prindx = HashMap->prindx + 1;
-    new->narray = malloc(sizeof(hash_node) * prime[new->prindx]);
+    hash_node * TempNodeArray;
 
-    for (int i = 0; i < prime[HashMap->prindx]; ++i) {
+    // calloc required to set bucket to NULL
+    if ( (TempNodeArray = calloc(sizeof(hash_node), prime[HashMap->prindx])) == NULL) {
+        fprintf(stderr, "malloc failed on internall structure, fatal error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < prime[HashMap->prindx - 1]; ++i) {
         
         if (HashMap->narray[i].bucket != NULL) {
 
-            size_t NewIndex = index(HashMap->narray[i].key, new);
-            new->narray[NewIndex].key = HashMap->narray[i].key;
-            new->narray[NewIndex].bucket = HashMap->narray[i].bucket;
+            size_t DummyIndex = index_node(HashMap->narray[i].key, TempNodeArray, prime[HashMap->prindx]);
+            TempNodeArray[DummyIndex].key = HashMap->narray[i].key;
+            TempNodeArray[DummyIndex].bucket = HashMap->narray[i].bucket;
         
         }
 
     }
 
-    HashMap->narray = realloc(HashMap->narray, sizeof(hash_node) * prime[new->prindx]);
+    free(HashMap->narray);
 
-    memcpy(*HashMap, *new);
+    if ( (HashMap->narray = malloc(sizeof(hash_node) * prime[HashMap->prindx])) == NULL) {
+        fprintf(stderr, "malloc failed, fatal error\n");
+        exit(EXIT_FAILURE);
+    }
 
-    free(new->narray);
-    free(new);
-    
+    memcpy(HashMap->narray, TempNodeArray, sizeof(hash_node) * prime[HashMap->prindx]);
+    free(TempNodeArray);
+
 }
 
-hash_map * initMap(const size_t Size) {
+hash_map initSMap(const size_t Size) {
+    
+    hash_map ReturnMap;
+    
+    if ( Size >= prime[PRIME_SIZE - 1] ) {
+        
+        fprintf(stderr, "Requested size of hashmap is too large, fatal error\n");
+        exit(EXIT_FAILURE);
+    
+    }
+
+    for (size_t i = 0; i < sizeof(prime) / sizeof(size_t); ++i) {
+        
+        if (Size < prime[i]) {
+            
+            ReturnMap.prindx = i;
+            break;
+        
+        }
+
+    }
+
+    if ( (ReturnMap.narray = calloc(sizeof(hash_node), prime[ReturnMap.prindx])) == NULL ) {
+        
+        fprintf(stderr, "Failed to intitalize internal node array of hash map, fatal error\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+    ReturnMap.prinodes = 0;
+
+    return ReturnMap;
+
+}
+
+hash_map * initHMap(const size_t Size) {
     
     hash_map * ReturnMap;
 
@@ -140,6 +184,8 @@ hash_map * initMap(const size_t Size) {
         exit(EXIT_FAILURE);
 
     }
+
+    ReturnMap->prindx = 0;
 
     if ( Size >= prime[PRIME_SIZE - 1] ) {
         
@@ -159,7 +205,7 @@ hash_map * initMap(const size_t Size) {
 
     }
 
-    if ( (ReturnMap->narray = malloc(sizeof(hash_node) * prime[ReturnMap->prindx])) == NULL ) {
+    if ( (ReturnMap->narray = calloc(sizeof(hash_node), prime[ReturnMap->prindx])) == NULL ) {
         
         fprintf(stderr, "Failed to intitalize internal node array of hash map, fatal error\n");
         exit(EXIT_FAILURE);
@@ -169,9 +215,10 @@ hash_map * initMap(const size_t Size) {
     ReturnMap->prinodes = 0;
 
     return ReturnMap;
+
 }
 
-bool exists(const size_t Key, const hash_map const * HashMap) {
+bool exists(const size_t Key, const hash_map * HashMap) {
 
     hmap_it Iter = find(Key, HashMap);
 
@@ -187,23 +234,24 @@ bool exists(const size_t Key, const hash_map const * HashMap) {
 
 }
 
-void setPair(const size_t Key, const void const * Data, hash_map * HashMap) {
+void setData(const size_t Key, void * Data, hash_map * HashMap) {
     
     hmap_it Iter = find(Key, HashMap);
 
     if (Iter == NULL) {
 
-        if ( HashMap->prinodes / prime[HashMap->prindx] > 0.7 ) {
+        if ( (float) HashMap->prinodes / prime[HashMap->prindx] > MAXLOAD ) {
 
+            ++(HashMap->prindx);
             rehash(HashMap);
     
         }
 
-            size_t DataIndex = index(Key, HashMap);
+        size_t DataIndex = index_node(Key, HashMap->narray, prime[HashMap->prindx]);
 
-            HashMap->narray[DataIndex].key = Key;
-            HashMap->narray[DataIndex].bucket = Data;
-            ++HashMap->prinodes;
+        HashMap->narray[DataIndex].key = Key;
+        HashMap->narray[DataIndex].bucket = Data;
+        ++HashMap->prinodes;
 
     } else {
         
@@ -213,13 +261,13 @@ void setPair(const size_t Key, const void const * Data, hash_map * HashMap) {
 
 }
 
-void * getData(const size_t Key, const hash_map const * HashMap) {
+void * getData(const size_t Key, const hash_map * HashMap) {
     
     hmap_it Iter = find(Key, HashMap);
 
     if (Iter == NULL) {
 
-        fprintf(stderr, "Key does not exist within current hash map, fatal error");
+        fprintf(stderr, "Key: %lu does not exist within current hash map, fatal error\n", Key);
         exit(EXIT_FAILURE);
     
     } else {
@@ -230,7 +278,7 @@ void * getData(const size_t Key, const hash_map const * HashMap) {
 
 }
 
-hmap_it beginIterator(const hash_map const * HashMap) {
+hmap_it beginIterator(const hash_map * HashMap) {
     
     hmap_it Iter;
     Iter = &HashMap->narray[0];
@@ -239,7 +287,7 @@ hmap_it beginIterator(const hash_map const * HashMap) {
 
 }
 
-hmap_it endIterator(const hash_map const * HashMap) {
+hmap_it endIterator(const hash_map * HashMap) {
     
     hmap_it Iter;
     Iter = &HashMap->narray[prime[HashMap->prindx]];
@@ -248,7 +296,7 @@ hmap_it endIterator(const hash_map const * HashMap) {
 
 }
 
-hmap_it find(const size_t Key, const hash_map const * HashMap) {
+hmap_it find(const size_t Key, const hash_map * HashMap) {
     
     hmap_it ReturnIt;
 
@@ -261,7 +309,7 @@ hmap_it find(const size_t Key, const hash_map const * HashMap) {
     
     } else if ( HashMap->narray[index1].key == Key ) {
 
-        ReturnIt = malloc(sizeof(hash_node) * (prime[HashMap->prindx] - index1));
+        ReturnIt = malloc(sizeof(hash_node));
         ReturnIt = &HashMap->narray[index1];
         return ReturnIt;
 
@@ -269,8 +317,7 @@ hmap_it find(const size_t Key, const hash_map const * HashMap) {
 
         for (size_t i = 0; i < prime[HashMap->prindx]; ++i) {
             
-            size_t index2 = (index1 - i * hash2(Key, prime[HashMap->prindx])) % prime[HashMap->prindx];
-            index2 < 0 ? prime[HashMap->prindx] + index2 : index2;
+            size_t index2 = (index1 + i * hash2(Key, prime[HashMap->prindx])) % prime[HashMap->prindx];
 
             if ( HashMap->narray[index2].bucket == NULL ) {
                 
@@ -279,7 +326,7 @@ hmap_it find(const size_t Key, const hash_map const * HashMap) {
 
             } else if ( HashMap->narray[index2].key == Key ) {
                 
-                ReturnIt = malloc(sizeof(hash_node) * (prime[HashMap->prindx] - index2));
+                ReturnIt = malloc(sizeof(hash_node) * (prime[HashMap->prindx]));
                 ReturnIt = &HashMap->narray[index2];
                 return ReturnIt;
 
@@ -295,19 +342,21 @@ hmap_it find(const size_t Key, const hash_map const * HashMap) {
 }
 
 // will let the user segfault and access memory that is not theres
-void advanceIterator(hmap_it * Iter) {
+bool advanceIterator(hmap_it * Iter, const hmap_it endIter) {
 
-    while (true) {
-        
-        ++(* Iter);
+    while (*Iter != endIter) {
 
-        if ( (* Iter)->bucket != NULL ) {
+        ++(*Iter);
 
-            break;
+        if ( (* Iter)->bucket != NULL && *Iter != endIter) {
+
+            return true;
 
         }
 
     }
+
+    return false;
 
 }
 
@@ -317,7 +366,7 @@ void clearNode(const size_t Key, hash_map * HashMap) {
 
     if ( Iter == NULL ) {
         
-        fprintf(stderr, "Unable to delete non existent node with key: %s", Key);
+        fprintf(stderr, "Unable to delete non existent node with key: %zu\n", Key);
     
     } else {
 
@@ -328,15 +377,35 @@ void clearNode(const size_t Key, hash_map * HashMap) {
 
 }
 
-void delMap(hash_map * HashMap) {
-    
-    for (int i = 0; i < prime[HashMap->prindx]; ++i) {
-        
-        free(HashMap->narray[i].bucket);
-    
-    }
+// user must free the buckets if the buckets are heap
+void delHMap(hash_map * HashMap) {
 
     free(HashMap->narray);
     free(HashMap);
 
 }
+
+void delSMap(hash_map * HashMap) {
+    free(HashMap->narray);
+}
+
+void reserve( const size_t Size, hash_map * HashMap) {
+
+    for (size_t i = HashMap->prindx; i < sizeof(prime) / sizeof(size_t); ++i) {
+        
+        if (Size < prime[i]) {
+            
+            HashMap->prindx = i;
+            break;
+        
+        }
+
+    }
+
+    rehash(HashMap);
+}
+
+size_t size(const hash_map * HashMap) {
+    return HashMap->prinodes;
+}
+

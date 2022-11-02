@@ -33,12 +33,20 @@ char* __file_line__ = NULL;
             KRED, __LINE__, KDFT); \
             __file_line__ = strapp(__file_line__, __LOCATION__ "\n"); \
         }
+
+// strict equality tests
 #define EQ_TEST(x, y) if (x == y) __UNIT_TEST_HELPER__
 #define NEQ_TEST(x, y) if (x != y) __UNIT_TEST_HELPER__
 #define GT_TEST(x, y) if (x > y) __UNIT_TEST_HELPER__
 #define LT_TEST(x, y) if (x < y) __UNIT_TEST_HELPER__
 #define GTE_TEST(x, y) if (x >= y) __UNIT_TEST_HELPER__
 #define LTE_TEST(x, y) if (x <= y) __UNIT_TEST_HELPER__
+
+// equal and not equal test with a tolerance 
+#define TEQ_TEST(x, y, tol) if (abs(x - y) < tol) __UNIT_TEST_HELPER__
+#define TNEQ_TEST(x, y, tol) if (abs(x - y) > tol) __UNIT_TEST_HELPER__
+
+// check entire array for equality or inequality
 #define ARREQ_TEST(x, y) if (ARRAYSIZE(x) == ARRAYSIZE(y)) { \
         for (size_t i = 0; i < ARRAYSIZE(x); ++i) { \
             if (x[i] != y[i]) { \
@@ -72,6 +80,8 @@ char* __file_line__ = NULL;
         printf("%s( line: %d ) : PASSED%s\n", \
         KGRN, __LINE__, KDFT);  \
     }
+
+// check entire cstring for equality or inequality
 #define CSTREQ_TEST(x, y) if (!strcmp(x, y)) { \
     printf("%s( line: %d ) : PASSED%s\n", \
     KGRN, __LINE__, KDFT);  \
