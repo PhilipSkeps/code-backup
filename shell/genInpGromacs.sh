@@ -51,11 +51,12 @@ if [[ $2 =~ ".pdb" ]]; then
     printf "SOL%18s\n" "$WAT" >> $TOP
 
     if [[ $6 =~ ".pdb" ]]; then # make graphene modifications
+        sed -i "s/GRPH/GP00/g" $6
         GromGrapheneGro.pl $GRO $6 "$baseMDP.gro"
         GRO="$baseMDP.gro"
         GromGrapheneItp.pl $6
-        GromGrapheneTop.pl $TOP "${TOP%%.*}_graphene.top"
-        TOP="${TOP%%.*}_graphene.top"
+        GromGrapheneTop.pl $TOP "${TOP%%.*}g.top"
+        TOP="${TOP%%.*}g.top"
     fi
     
 else # otherwise we know what the gro file is becuase user input
@@ -67,15 +68,14 @@ else # otherwise we know what the gro file is becuase user input
         GromGrapheneGro.pl $GRO $4 "$baseMDP.gro"
         GRO="$baseMDP.gro"
         GromGrapheneItp.pl $4
-        GromGrapheneTop.pl $TOP "${TOP%%.*}_graphene.top"
-        TOP="${TOP%%.*}_graphene.top"
+        GromGrapheneTop.pl $TOP "${TOP%%.*}g.top"
+        TOP="${TOP%%.*}g.top"
     fi
 
 fi # end if
 
 # create the index files for grouping
 gmx -nobackup make_ndx -f $GRO -o $NDX << EOF
-splitres
 q
 EOF
     

@@ -31,17 +31,17 @@ if [[ $2 =~ ".pdb" ]]; then
     Z=$5
     
 cat << EOF > $TOP
-    ; Include forcefield parameters
-    #include "./charmm36_ljpme-graphene-oct2022.ff/forcefield.itp"
-    #include "./NMA.itp"
+; Include forcefield parameters
+#include "./charmm36_ljpme-jul2021.ff/forcefield.itp"
+#include "./NMA.itp"
 
-    [ system ]
-    ; Name
-    Graphene
+[ system ]
+; Name
+Graphene
 
-    [ molecules ]
-    ; Compound      #mols
-    NMA                1
+[ molecules ]
+; Compound      #mols
+NMA                1
 EOF
     
     GromGrapheneItp.pl $PDB
@@ -61,7 +61,7 @@ gmx -nobackup make_ndx -f $GRO -o $NDX << EOF
 splitres
 q
 EOF
-    
-# Create TPR
-gmx -nobackup grompp -f $MDP -c $GRO -p $TOP -o $TPR -n $NDX -po $FUL
+
+# Create TPR; maxwarn is required due to a bug in gromacs that forces gpu support on pme cut-off
+gmx -nobackup grompp -f $MDP -c $GRO -p $TOP -o $TPR -n $NDX -po $FUL -maxwarn 1
 

@@ -13,10 +13,11 @@ unset EQUMDP
 unset PRODMDP
 unset COORDFILE
 unset DIMENSIONS
+unset GRAPH
 
-USAGE="$(basename "$0") [-h] [-m MINMDP] [-t HEATMDP] [-e EQUMDP] [-p PRODMDP] [-c COORDFILE] [-d DIMENSIONS] [-n NUMRUNTIMES]"
+USAGE="$(basename "$0") [-h] [-m MINMDP] [-t HEATMDP] [-e EQUMDP] [-p PRODMDP] [-c COORDFILE] [-g GRAPH] [-d DIMENSIONS] [-n NUMRUNTIMES]"
 
-while getopts ":hn:m:t:e:p:c:d:" flag; do
+while getopts ":hn:m:t:e:p:g:c:d:" flag; do
     case "${flag}" in
         n) NUM=${OPTARG};;
         m) MINMDP=${OPTARG};;
@@ -24,6 +25,7 @@ while getopts ":hn:m:t:e:p:c:d:" flag; do
         e) EQUMDP=${OPTARG};;
         p) PRODMDP=${OPTARG};;
         c) COORDFILE=${OPTARG};;
+        g) GRAPH=${OPTARG};;
         d) IFS=',' eval 'DIMENSIONS=($OPTARG)';; # must be comma delimited
         h) echo "$USAGE"; exit 1;;
         :) printf "missing argument for -%s\n" "$OPTARG" >&2; echo "$USAGE" >&2; exit 1;;
@@ -103,6 +105,20 @@ elif [[ ! $COORDFILE =~ .pdb$ ]]; then
     exit 1
 fi
 
+if [[ ! -z ${GRAPH+z} ]]; then
+    echo "Graphene option selected"
+    if [[ ! $GRAPH =~ "^/" ]]; then
+        GRAPH=$PWD/$GRAPH
+    fi
+    if [[ ! -f $GRAPH ]]; then
+        echo "MDP file: $GRAPH does not exist" >&2
+        exit 1
+    elif [[ ! $GRAPH =~ .pdb$ ]]; then
+        echo "file passed using c option is not an pdb file" >&2
+        exit 1
+    fi
+fi
+
 shift $((OPTIND - 1))
 
 if  ! (($# == 0)); then
@@ -140,9 +156,12 @@ cd /u/sa/br/pskeps/scratch/Grom_Results_Files/"$DIRNAME" || exit
 ## RUNSCRIPT GENERATION
 ##############################################################################################################################################
 
+if [[ ! -z ${GRAPH+z} ]]; then # graphene file was specified
+
 temp="${COORDFILE##/*/}"
-TOP="${temp%%.*}.top"
+TOP="${temp%%.*}g.top"
 unset temp
+
 cat << EOF > runscript.batch
 #!/bin/bash                                                                           
 #SBATCH --job-name="GROMACSMINMPI"
@@ -172,11 +191,109 @@ cd $SCRATCH/Grom_Results_Files/$DIRNAME
 mkdir \$SLURM_JOBID
 cd \$SLURM_JOBID
 
+# Create a short JOBID based on the one provided by the scheduler
+JOBID=\$SLURM_JOBID
+
+cat \$0 > runscript.\$JOBID
+printenv > env.\$JOBID
+
 cp $MINMDP .
 cp $HEATMDP .
 cp $EQUMDP .
 cp $PRODMDP .
 cp $COORDFILE .
+cp $GRAPH .
+
+cp -r $FORCEF .
+
+MINMDP=${MINMDP##/*/}
+HEATMDP=${HEATMDP##/*/}
+EQUMDP=${EQUMDP##/*/}
+PRODMDP=${PRODMDP##/*/}
+COORDFILE=${COORDFILE##/*/}
+GRAPH=${GRAPH##/*/}
+
+if [[ ! -f \$MINMDP || ! -f \$HEATMDP || ! -f \$EQUMDP || ! -f \$PRODMDP || ! -f \$COORDFILE || ! -f \$GRAPH ]]; then
+    echo "full paths must be given to the scheduler" >&2
+    exit 1
+fi
+
+export OMP_NUM_THREADS=1
+
+# Run the job.
+/sw/utility/local/tymer time_stamp "running job min"
+
+# make tpr min file and top file and submit the job 
+genInpGromacs.sh \${MINMDP} \${COORDFILE} ${DIMENSIONS[*]} \$GRAPH
+srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${MINMDP%%.*} -c \${MINMDP%%.*}_out.gro
+
+# tpr for heat file and submit job
+/sw/utility/local/tymer time_stamp "running job heat"
+genInpGromacs.sh \${HEATMDP} \${MINMDP%%.*}_out.gro ${TOP}
+srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${HEATMDP%%.*} -c \${HEATMDP%%.*}_out.gro
+
+# tpr for equ file and submit job 
+/sw/utility/local/tymer time_stamp "running job equ"
+genInpGromacs.sh \${EQUMDP} \${HEATMDP%%.*}_out.gro ${TOP}
+srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${EQUMDP%%.*} -c \${EQUMDP%%.*}_out.gro
+
+# tpr for prod file and submit job
+/sw/utility/local/tymer time_stamp "running job prod"
+genInpGromacs.sh \${PRODMDP} \${EQUMDP%%.*}_out.gro ${TOP}
+srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${PRODMDP%%.*} -c \${PRODMDP%%.*}_out.gro -cpo \${PRODMDP%%.*}.cpt
+
+# run has finished and exit
+/sw/utility/local/tymer time_stamp "finished"
+
+EOF
+
+else # no graphene file was specified
+
+temp="${COORDFILE##/*/}"
+TOP="${temp%%.*}.top"
+unset temp
+
+cat << EOF > runscript.batch
+#!/bin/bash                                                                           
+#SBATCH --job-name="GROMACSMINMPI"
+#SBATCH --nodes=4                                                                 
+#SBATCH --ntasks-per-node=36
+#SBATCH --export=ALL
+#SBATCH --exclusive   
+#SBATCH --time=144:00:00
+#SBATCH -o slurm.%j.out
+#SBATCH -e slurm.%j.err
+
+
+#clear environment:
+module purge 
+#MPI:
+module load compilers/gcc/9.3.1
+module load mpi/openmpi/gcc/3.1.3
+module load libs/fftw/gcc9-ompi/3.3.8
+module load apps/gromacs/gcc-ompi/2021.1
+
+# This line sets thread mapping.  Test for best value.
+export KMP_AFFINITY=respect,verbose
+export GMX_MAXBACKUP=-1
+
+# Go to the directory from which our job was launched                                   
+cd $SCRATCH/Grom_Results_Files/$DIRNAME
+mkdir \$SLURM_JOBID
+cd \$SLURM_JOBID
+
+# Create a short JOBID based on the one provided by the scheduler
+JOBID=\$SLURM_JOBID
+
+cat \$0 > runscript.\$JOBID
+printenv > env.\$JOBID
+
+cp $MINMDP .
+cp $HEATMDP .
+cp $EQUMDP .
+cp $PRODMDP .
+cp $COORDFILE .
+
 cp -r $FORCEF .
 
 MINMDP=${MINMDP##/*/}
@@ -185,39 +302,33 @@ EQUMDP=${EQUMDP##/*/}
 PRODMDP=${PRODMDP##/*/}
 COORDFILE=${COORDFILE##/*/}
 
+export OMP_NUM_THREADS=1
+
 if [[ ! -f \$MINMDP || ! -f \$HEATMDP || ! -f \$EQUMDP || ! -f \$PRODMDP || ! -f \$COORDFILE ]]; then
     echo "full paths must be given to the scheduler" >&2
     exit 1
 fi
 
-# Create a short JOBID based on the one provided by the scheduler
-JOBID=\$SLURM_JOBID
-
-cat \$0 > runscript.\$JOBID
-printenv > env.\$JOBID
-
-export OMP_NUM_THREADS=1
-
 # Run the job.
 /sw/utility/local/tymer time_stamp "running job min"
 
 # make tpr min file and top file and submit the job 
-genInpGromacs \${MINMDP} \${COORDFILE} ${DIMENSIONS[*]} 
+genInpGromacs.sh \${MINMDP} \${COORDFILE} ${DIMENSIONS[*]} 
 srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${MINMDP%%.*} -c \${MINMDP%%.*}_out.gro
 
 # tpr for heat file and submit job
 /sw/utility/local/tymer time_stamp "running job heat"
-genInpGromacs \${HEATMDP} \${MINMDP%%.*}_out.gro ${TOP}
+genInpGromacs.sh \${HEATMDP} \${MINMDP%%.*}_out.gro ${TOP}
 srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${HEATMDP%%.*} -c \${HEATMDP%%.*}_out.gro
 
 # tpr for equ file and submit job 
 /sw/utility/local/tymer time_stamp "running job equ"
-genInpGromacs \${EQUMDP} \${HEATMDP%%.*}_out.gro ${TOP}
+genInpGromacs.sh \${EQUMDP} \${HEATMDP%%.*}_out.gro ${TOP}
 srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${EQUMDP%%.*} -c \${EQUMDP%%.*}_out.gro
 
 # tpr for prod file and submit job
 /sw/utility/local/tymer time_stamp "running job prod"
-genInpGromacs \${PRODMDP} \${EQUMDP%%.*}_out.gro ${TOP}
+genInpGromacs.sh \${PRODMDP} \${EQUMDP%%.*}_out.gro ${TOP}
 srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${PRODMDP%%.*} -c \${PRODMDP%%.*}_out.gro -cpo \${PRODMDP%%.*}.cpt
 
 # run has finished and exit
@@ -225,6 +336,7 @@ srun --mpi=pmi2 --nodes=4 --ntasks-per-node=36 mdrun_mpi -s -deffnm \${PRODMDP%%
 
 EOF
 
+fi
 ##############################################################################################################################################
 ## RUN AND EXIT
 ##############################################################################################################################################

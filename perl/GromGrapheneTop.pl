@@ -36,10 +36,9 @@ sub main {
         print OUT $_;
     }
 
-    print OUT ": Include forcefield for graphene\n";
-    print OUT "#include ./charmm36_ljpme-graphene-oct2022.ff/forcefield.itp\n";
-    print OUT "\n; Include topology for graphene\n";
-    print OUT "#include ./NMA.itp\n\n";
+    print OUT "\n\n; Include topology for graphene\n";
+    print OUT '#include "./NMA.itp"';
+    print OUT "\n\n";
 
     foreach (@AfterLines) {
         print OUT $_;
