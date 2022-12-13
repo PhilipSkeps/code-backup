@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "VvDTMGya/czjigGVFajtl30N2UaPYtSa6hSY7Ie2EAavEdeOa1L9T3Ma6t4aEP6TN1ufGMj2u9f6PvOSqQqz0Q==",
+  "success": true,
+  "projectFilePath": "/home/pskeps/HomeDir/dev/c#/PropFromStructure/PropFromStructure.csproj",
+  "expectedPackageFiles": [
+    "/home/pskeps/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.10/microsoft.aspnetcore.app.ref.6.0.10.nupkg.sha512"
+  ],
+  "logs": []
+}

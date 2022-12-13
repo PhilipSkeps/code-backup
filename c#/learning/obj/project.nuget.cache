@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "T4cbaxU8UpqLNToguYZnRSMuQfNEqRosS0wHywn9kz+vT+spMcwGpRnNGRTKGO9wv4Ck+ARZy7Lg+dSqgVDniw==",
+  "success": true,
+  "projectFilePath": "/home/pskeps/HomeDir/dev/c#/learning/learning.csproj",
+  "expectedPackageFiles": [
+    "/home/pskeps/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.10/microsoft.aspnetcore.app.ref.6.0.10.nupkg.sha512"
+  ],
+  "logs": []
+}

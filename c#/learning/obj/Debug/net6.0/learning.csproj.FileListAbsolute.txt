@@ -1,0 +1,15 @@
+/home/pskeps/HomeDir/dev/c#/learning/bin/Debug/net6.0/learning
+/home/pskeps/HomeDir/dev/c#/learning/bin/Debug/net6.0/learning.deps.json
+/home/pskeps/HomeDir/dev/c#/learning/bin/Debug/net6.0/learning.runtimeconfig.json
+/home/pskeps/HomeDir/dev/c#/learning/bin/Debug/net6.0/learning.dll
+/home/pskeps/HomeDir/dev/c#/learning/bin/Debug/net6.0/ref/learning.dll
+/home/pskeps/HomeDir/dev/c#/learning/bin/Debug/net6.0/learning.pdb
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.csproj.AssemblyReference.cache
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.GeneratedMSBuildEditorConfig.editorconfig
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.AssemblyInfoInputs.cache
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.AssemblyInfo.cs
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.csproj.CoreCompileInputs.cache
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.dll
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/ref/learning.dll
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.pdb
+/home/pskeps/HomeDir/dev/c#/learning/obj/Debug/net6.0/learning.genruntimeconfig.cache

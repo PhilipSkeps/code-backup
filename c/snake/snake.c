@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <math.h>
 
-#include "../IncPS/UsefulMacros.h"
+#include "../incps/macrosps.h"
 
 #ifdef WIN32
     #include <dos.h>

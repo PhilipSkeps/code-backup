@@ -6,7 +6,7 @@
 #include <strings.h>
 #include <signal.h>
 
-#include "../hashMap/hashMap.h"
+#include "../incps/hmap.h"
 
 #define WLOG(fh, string) fputs(string, fh); fflush(fh);
 #define WFLOG(fh, fmt, args...) fprintf(fh, fmt, ##args); fflush(fh);

@@ -1,1 +1,0 @@
-gcc AllTest.c -Wall -g -L../LibPS -ldc -o AllTest

@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
-#include "../IncPS/UsefulMacros.h"
-#include "../IncPS/stringExtra.h"
-#include "../IncPS/stdioExtra.h"
+#include "../incps/macrosps.h"
+#include "../incps/stringps.h"
+#include "../incps/stdiops.h"
 #define SIZE 25
 
 

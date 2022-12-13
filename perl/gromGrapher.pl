@@ -202,6 +202,7 @@ sub graphData {
 
     my $image = $graph -> plot(\@data) || die "failed to produce plot with error:\n$!"; 
     my $fTitle = $title . ".png";
+    $fTitle =~ s/\//\\/g;
     open(OUT,">$fTitle") || die "unable to open $title for writing with error:\n$!";
     print OUT $image -> png;
     close(OUT);

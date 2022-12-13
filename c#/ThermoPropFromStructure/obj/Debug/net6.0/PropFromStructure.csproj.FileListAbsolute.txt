@@ -1,0 +1,15 @@
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.csproj.AssemblyReference.cache
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.GeneratedMSBuildEditorConfig.editorconfig
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.AssemblyInfoInputs.cache
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.AssemblyInfo.cs
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.csproj.CoreCompileInputs.cache
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/bin/Debug/net6.0/PropFromStructure
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/bin/Debug/net6.0/PropFromStructure.deps.json
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/bin/Debug/net6.0/PropFromStructure.runtimeconfig.json
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/bin/Debug/net6.0/PropFromStructure.dll
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/bin/Debug/net6.0/ref/PropFromStructure.dll
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/bin/Debug/net6.0/PropFromStructure.pdb
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.dll
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/ref/PropFromStructure.dll
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.pdb
+/home/pskeps/HomeDir/dev/c#/PropFromStructure/obj/Debug/net6.0/PropFromStructure.genruntimeconfig.cache
